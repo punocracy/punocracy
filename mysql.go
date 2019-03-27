@@ -10,7 +10,7 @@ import (
 func main() {
 	fmt.Println("Hello, world!")
 	// Connect to database
-	db, err := sql.Open("mysql", "nat:password@/moviesA1")
+	db, err := sql.Open("mysql", "nathaniel:nathaniel@/NatTest")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -24,7 +24,7 @@ func main() {
 	fmt.Println("Ping successful!")
 
 	// Query for something
-	resultRows, err := db.Query("SELECT name FROM Actors WHERE gender='F'")
+	resultRows, err := db.Query("SELECT name FROM Example WHERE age>=50")
 	if err != nil {
 		log.Fatal(err)
 	}
