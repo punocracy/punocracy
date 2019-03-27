@@ -7,16 +7,6 @@ import (
 	"log"
 )
 
-// Type for phrase collection in MongoDB
-type Phrase struct {
-	objectId      string `bson:"_id"`
-	submitterUser int    `bson:"userid"`
-	ratings       Ratings
-	wordlist      []int `bson:"wordList"`
-	approvedBy    int   `bson:"approvedBy"`
-	phraseText    string
-}
-
 func main() {
 	fmt.Println("Hello, world!")
 
