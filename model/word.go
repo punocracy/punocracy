@@ -2,7 +2,7 @@ package model
 
 // Word is the core of our project
 type Word struct {
-	wordID         int
-	word           string
-	homophoneGroup int
+	WordID         int    `bson:"wordID"`
+	Word           string `bson:"word"`
+	HomophoneGroup int    `bson:"homophoneGroup"`
 }
