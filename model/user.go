@@ -18,9 +18,9 @@ const (
 
 // User is the data structure for a user
 type User struct {
-	userID    int             `bson:"userID"`
-	username  string          `bson:"username"`
-	password  hash.Hash       `bson:"passwordHash"`
-	email     string          `bson:"email"`
-	permLevel PermissionLevel `bson:"permLevel"`
+	UserID    int             `bson:"userID"`
+	Username  string          `bson:"username"`
+	Password  hash.Hash       `bson:"passwordHash"`
+	Email     string          `bson:"email"`
+	PermLevel PermissionLevel `bson:"permLevel"`
 }
