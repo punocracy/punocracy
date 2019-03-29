@@ -71,9 +71,11 @@ func main() {
 	defer outputCsv.Close()
 
 	// Write line by line
+	var lineNum int = 1
 	for word, groupNum := range wordMap {
 		// Create output CSV line
-		writeStr := fmt.Sprintf("%s,%d\n", word, groupNum)
+		writeStr := fmt.Sprintf("%d,%s,%d\n", lineNum, word, groupNum)
 		outputCsv.WriteString(writeStr)
+		lineNum = lineNum + 1
 	}
 }
