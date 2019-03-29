@@ -13,11 +13,12 @@ type Rating struct {
 
 // Phrase is another core of our project
 type Phrase struct {
-	submitterUserID int
-	submissionDate  time.Time
-	ratings         Rating
-	wordList        []int
-	approvedBy      int
-	approvalDate    time.Time
-	prhaseText      string
+	phraseID        string    `bson:"_id"`
+	submitterUserID int       `bson:"submitterUserID"`
+	submissionDate  time.Time `bson:"submissionDate"`
+	ratings         Rating    `bson:"ratings"`
+	wordList        []int     `bson:"wordList"`
+	approvedBy      int       `bson:"approvedBy"`
+	approvalDate    time.Time `bson:"approvalDate"`
+	phraseText      string    `bson:"phraseText"`
 }

@@ -7,7 +7,7 @@ type PermissionLevel int
 
 const (
 	// Administrator is the user with the highest privilege
-	Administrator PermissionLevel = iota
+	Administrator PermissionLevel = iota + 1
 	// Curator is the user that reviews user submitted phrases
 	Curator
 	// RegularUser is the user that can rate and submit phrases
@@ -18,9 +18,9 @@ const (
 
 // User is the data structure for a user
 type User struct {
-	userID    int
-	username  string
-	password  hash.Hash
-	email     string
-	permLevel PermissionLevel
+	userID    int             `bson:"userID"`
+	username  string          `bson:"username"`
+	password  hash.Hash       `bson:"passwordHash"`
+	email     string          `bson:"email"`
+	permLevel PermissionLevel `bson:"permLevel"`
 }
