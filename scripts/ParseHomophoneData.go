@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	//"database/sql"
 	"fmt"
 	"log"
 	"os"
@@ -10,7 +9,7 @@ import (
 )
 
 func main() {
-	fmt.Println("Load data into MySQL")
+	fmt.Println("Parse data for loading into MySQL")
 
 	// Load CSV data into memory
 	csvFile, err := os.Open("../data/homophones.csv")
@@ -65,7 +64,7 @@ func main() {
 	}
 
 	// Open output file
-	outputCsv, err := os.Create("parsedHomophones.csv")
+	outputCsv, err := os.Create("../data/parsedHomophones.csv")
 	if err != nil {
 		log.Fatal(err)
 	}
