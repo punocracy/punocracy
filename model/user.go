@@ -1,7 +1,5 @@
 package model
 
-import "hash"
-
 // PermissionLevel defines the level of privileges a user has
 type PermissionLevel int
 
@@ -20,7 +18,7 @@ const (
 type User struct {
 	UserID    int             `bson:"userID"`
 	Username  string          `bson:"username"`
-	Password  hash.Hash       `bson:"passwordHash"`
+	Password  []byte          `bson:"passwordHash"`
 	Email     string          `bson:"email"`
 	PermLevel PermissionLevel `bson:"permLevel"`
 }

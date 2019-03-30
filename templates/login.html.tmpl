@@ -1,0 +1,13 @@
+{{define "content"}}
+<div class="container text-center">
+    <form class="form-signin" action="/login" method="POST">
+        <h1 class="h3 mb-3 font-weight-normal">Please Log In</h1>
+        <label for="inputUsername" class="sr-only">Username</label>
+        <input class="form-control" id="inputUsername" type="text" name="username" placeholder="Username">
+        <label for="inputPassword" class="sr-only">Password</label>
+        <input class="form-control" id="inputPassword" type="password" name="password" placeholder="Password">
+        <input class="btn btn-lg btn-primary btn-block" type="submit" value="login">
+        <p class="mt-5 mb-3 text-muted">Punocracy 2017-2019</p>
+    </form>
+</div>
+{{end}}
