@@ -9,5 +9,7 @@ import (
 
 func main() {
 	http.HandleFunc("/", handlers.HomeHandler)
+	http.HandleFunc("/login", handlers.LoginHandler)
+	http.HandleFunc("/register", handlers.RegisterHandler)
 	log.Fatal(http.ListenAndServe(":8888", nil))
 }
