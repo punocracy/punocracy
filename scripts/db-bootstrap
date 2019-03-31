@@ -6,7 +6,7 @@ MYSQL_TCP_PORT=${MYSQL_TCP_PORT:-3306}
 MYSQL_USER=${MYSQL_USER:-root}
 MYSQL_PWD=${MYSQL_PWD:-""}
 
-for dbname in "goodsample" "goodsample_test"; do
+for dbname in "punocracy" "punocracy_test"; do
     dbname=${dbname//\-/_}
 
     echo "Creating database $dbname..."

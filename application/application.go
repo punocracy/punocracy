@@ -9,8 +9,8 @@ import (
 	"github.com/spf13/viper"
 	"net/http"
 
-	"github.com/alvarosness/goodsample/handlers"
-	"github.com/alvarosness/goodsample/middlewares"
+	"github.com/alvarosness/punocracy/handlers"
+	"github.com/alvarosness/punocracy/middlewares"
 )
 
 // New is the constructor for Application struct.

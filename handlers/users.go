@@ -2,8 +2,8 @@ package handlers
 
 import (
     "errors"
-    "github.com/alvarosness/goodsample/models"
-    "github.com/alvarosness/goodsample/libhttp"
+    "github.com/alvarosness/punocracy/models"
+    "github.com/alvarosness/punocracy/libhttp"
     "github.com/gorilla/sessions"
     "github.com/jmoiron/sqlx"
     "html/template"
@@ -60,7 +60,7 @@ func GetLogin(w http.ResponseWriter, r *http.Request) {
 
     sessionStore := r.Context().Value("sessionStore").(sessions.Store)
 
-    session, _ := sessionStore.Get(r, "goodsample-session")
+    session, _ := sessionStore.Get(r, "punocracy-session")
 
     currentUserInterface := session.Values["user"]
     if currentUserInterface != nil {
@@ -89,7 +89,7 @@ func PostLogin(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    session, _ := sessionStore.Get(r, "goodsample-session")
+    session, _ := sessionStore.Get(r, "punocracy-session")
     session.Values["user"] = user
 
     err = session.Save(r, w)
@@ -106,7 +106,7 @@ func GetLogout(w http.ResponseWriter, r *http.Request) {
 
     sessionStore := r.Context().Value( "sessionStore").(sessions.Store)
 
-    session, _ := sessionStore.Get(r, "goodsample-session")
+    session, _ := sessionStore.Get(r, "punocracy-session")
 
     delete(session.Values, "user")
     session.Save(r, w)
@@ -136,7 +136,7 @@ func PutUsersID(w http.ResponseWriter, r *http.Request) {
 
     sessionStore := r.Context().Value( "sessionStore").(sessions.Store)
 
-    session, _ := sessionStore.Get(r, "goodsample-session")
+    session, _ := sessionStore.Get(r, "punocracy-session")
 
     currentUser := session.Values["user"].(*models.UserRow)
 

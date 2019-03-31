@@ -4,7 +4,7 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
-	"github.com/alvarosness/goodsample/libstring"
+	"github.com/alvarosness/punocracy/libstring"
 	"testing"
 	"strings"
 )
@@ -14,7 +14,7 @@ func newEmailForTest() string {
 }
 
 func newDbForTest(t *testing.T) *sqlx.DB {
-	defaultDSN := strings.Replace("root:@tcp(localhost:3306)/goodsample_test?parseTime=true", "-", "_", -1)
+	defaultDSN := strings.Replace("root:@tcp(localhost:3306)/punocracy_test?parseTime=true", "-", "_", -1)
 	db, err := sqlx.Connect("mysql", defaultDSN)
 	if err != nil {
 		t.Fatalf("Connecting to local MySQL should never fail. Error: %v", err)

@@ -1,8 +1,8 @@
 package handlers
 
 import (
-    "github.com/alvarosness/goodsample/models"
-    "github.com/alvarosness/goodsample/libhttp"
+    "github.com/alvarosness/punocracy/models"
+    "github.com/alvarosness/punocracy/libhttp"
     "github.com/gorilla/sessions"
     "html/template"
     "net/http"
@@ -13,7 +13,7 @@ func GetHome(w http.ResponseWriter, r *http.Request) {
 
     sessionStore := r.Context().Value( "sessionStore").(sessions.Store)
 
-    session, _ := sessionStore.Get(r, "goodsample-session")
+    session, _ := sessionStore.Get(r, "punocracy-session")
     currentUser, ok := session.Values["user"].(*models.UserRow)
     if !ok {
         http.Redirect(w, r, "/logout", 302)

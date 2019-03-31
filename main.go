@@ -1,16 +1,17 @@
 package main
 
 import (
+	"encoding/gob"
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/tylerb/graceful"
-	"net/http"
-	"time"
-	"strings"
-	"encoding/gob"
 
-	"github.com/alvarosness/goodsample/application"
-	"github.com/alvarosness/goodsample/models"
+	"github.com/alvarosness/punocracy/application"
+	"github.com/alvarosness/punocracy/models"
 )
 
 func init() {
@@ -18,7 +19,7 @@ func init() {
 }
 
 func newConfig() (*viper.Viper, error) {
-	defaultDSN := strings.Replace("root:@tcp(localhost:3306)/goodsample?parseTime=true", "-", "_", -1)
+	defaultDSN := strings.Replace("alvaro:quiabo@tcp(localhost:3306)/punocracy?parseTime=true", "-", "_", -1)
 
 	c := viper.New()
 	c.SetDefault("dsn", defaultDSN)

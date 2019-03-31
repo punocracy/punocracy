@@ -7,13 +7,13 @@
 3. Setup MySQL database.
     ```
     go get github.com/mattes/migrate
-    cd $GOPATH/src/github.com/alvarosness/goodsample
+    cd $GOPATH/src/github.com/alvarosness/punocracy
     ./scripts/db-bootstrap
     ```
 
 4. Run the server
     ```
-    cd $GOPATH/src/github.com/alvarosness/goodsample
+    cd $GOPATH/src/github.com/alvarosness/punocracy
     go run main.go
     ```
 
@@ -28,7 +28,7 @@
 
 * **HTTP_DRAIN_INTERVAL:** How long application will wait to drain old requests before restarting. Default: `"1s"`
 
-* **DSN:** RDBMS database path. Default: `$(whoami)@tcp(localhost:3306)/goodsample?parseTime=true`
+* **DSN:** RDBMS database path. Default: `$(whoami)@tcp(localhost:3306)/punocracy?parseTime=true`
 
 * **COOKIE_SECRET:** Cookie secret for session. Default: Auto generated.
 

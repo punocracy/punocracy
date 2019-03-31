@@ -4,7 +4,7 @@ FROM golang
 RUN go get github.com/tools/godep
 
 # Add project directory to Docker image.
-ADD . /go/src/github.com/alvarosness/goodsample
+ADD . /go/src/github.com/alvarosness/punocracy
 
 ENV USER alvaro
 ENV HTTP_ADDR :8888
@@ -14,9 +14,9 @@ ENV COOKIE_SECRET zu7HZy1Da2abXWPP
 # Replace this with actual PostgreSQL DSN.
 ENV DSN $GO_BOOTSTRAP_MYSQL_DSN
 
-WORKDIR /go/src/github.com/alvarosness/goodsample
+WORKDIR /go/src/github.com/alvarosness/punocracy
 
 RUN godep go build
 
 EXPOSE 8888
-CMD ./goodsample
+CMD ./punocracy
