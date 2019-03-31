@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"github.com/alvarosness/sample/libhttp"
+	"github.com/alvarosness/punocracy/libhttp"
 	"html/template"
 	"net/http"
 )

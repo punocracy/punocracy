@@ -4,7 +4,7 @@
 
 2. Run the server
     ```
-    cd $GOPATH/src/github.com/alvarosness/sample
+    cd $GOPATH/src/github.com/alvarosness/punocracy
     go run main.go
     ```
 
