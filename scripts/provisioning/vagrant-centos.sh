@@ -17,5 +17,5 @@ fi
 
 GOPATH=/go go get github.com/tools/godep
 
-cd /go/src/github.com/alvarosness/punocracy
+cd /go/src/github.com/alvarosness/goodsample
 GOPATH=/go go get ./...

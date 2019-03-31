@@ -6,13 +6,23 @@ import (
 	"github.com/tylerb/graceful"
 	"net/http"
 	"time"
+	"strings"
+	"encoding/gob"
 
-	"github.com/alvarosness/punocracy/application"
+	"github.com/alvarosness/goodsample/application"
+	"github.com/alvarosness/goodsample/models"
 )
 
+func init() {
+	gob.Register(&models.UserRow{})
+}
+
 func newConfig() (*viper.Viper, error) {
+	defaultDSN := strings.Replace("root:@tcp(localhost:3306)/goodsample?parseTime=true", "-", "_", -1)
+
 	c := viper.New()
-	c.SetDefault("cookie_secret", "LwxL6R3E0iayWXnm")
+	c.SetDefault("dsn", defaultDSN)
+	c.SetDefault("cookie_secret", "zu7HZy1Da2abXWPP")
 	c.SetDefault("http_addr", ":8888")
 	c.SetDefault("http_cert_file", "")
 	c.SetDefault("http_key_file", "")

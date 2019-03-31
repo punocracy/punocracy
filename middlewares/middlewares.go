@@ -33,7 +33,7 @@ func SetSessionStore(sessionStore sessions.Store) func(http.Handler) http.Handle
 func MustLogin(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		sessionStore := req.Context().Value( "sessionStore").(sessions.Store)
-		session, _ := sessionStore.Get(req, "sample-session")
+		session, _ := sessionStore.Get(req, "goodsample-session")
 		userRowInterface := session.Values["user"]
 
 		if userRowInterface == nil {

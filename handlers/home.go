@@ -1,19 +1,36 @@
 package handlers
 
 import (
-	"github.com/alvarosness/punocracy/libhttp"
-	"html/template"
-	"net/http"
+    "github.com/alvarosness/goodsample/models"
+    "github.com/alvarosness/goodsample/libhttp"
+    "github.com/gorilla/sessions"
+    "html/template"
+    "net/http"
 )
 
 func GetHome(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
+    w.Header().Set("Content-Type", "text/html")
 
-	tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/home.html.tmpl")
-	if err != nil {
-		libhttp.HandleErrorJson(w, err)
-		return
-	}
+    sessionStore := r.Context().Value( "sessionStore").(sessions.Store)
 
-	tmpl.Execute(w, nil)
+    session, _ := sessionStore.Get(r, "goodsample-session")
+    currentUser, ok := session.Values["user"].(*models.UserRow)
+    if !ok {
+        http.Redirect(w, r, "/logout", 302)
+        return
+    }
+
+    data := struct {
+        CurrentUser *models.UserRow
+    }{
+        currentUser,
+    }
+
+    tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/home.html.tmpl")
+    if err != nil {
+        libhttp.HandleErrorJson(w, err)
+        return
+    }
+
+    tmpl.Execute(w, data)
 }

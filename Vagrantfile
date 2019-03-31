@@ -30,5 +30,5 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # netstat -rn | grep "^0.0.0.0 " | cut -d " " -f10
   #
   # Here's an example on how to run your application inside vagrant while connecting to your host's PostgreSQL.
-  # GOPATH=/go DSN=postgres://$PGUSER@$(netstat -rn | grep "^0.0.0.0 " | cut -d " " -f10):5432/$PROJECT_NAME?sslmode=disable go run main.go
+  # GOPATH=/go DSN=mysql://$(whoami)@tcp($(netstat -rn | grep "^0.0.0.0 " | cut -d " " -f10):5432)/$PROJECT_NAME?parseTime=true go run main.go
 end

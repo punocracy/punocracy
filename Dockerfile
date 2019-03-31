@@ -4,19 +4,19 @@ FROM golang
 RUN go get github.com/tools/godep
 
 # Add project directory to Docker image.
-ADD . /go/src/github.com/alvarosness/punocracy
+ADD . /go/src/github.com/alvarosness/goodsample
 
 ENV USER alvaro
 ENV HTTP_ADDR :8888
 ENV HTTP_DRAIN_INTERVAL 1s
-ENV COOKIE_SECRET LwxL6R3E0iayWXnm
+ENV COOKIE_SECRET zu7HZy1Da2abXWPP
 
 # Replace this with actual PostgreSQL DSN.
-ENV DSN postgres://alvaro@localhost:5432/punocracy?sslmode=disable
+ENV DSN $GO_BOOTSTRAP_MYSQL_DSN
 
-WORKDIR /go/src/github.com/alvarosness/punocracy
+WORKDIR /go/src/github.com/alvarosness/goodsample
 
 RUN godep go build
 
 EXPOSE 8888
-CMD ./punocracy
+CMD ./goodsample
