@@ -1,10 +1,96 @@
 {{define "content"}}
-<div class="container">
-  <div class="row">
-    <div class="jumbotron">
-      <h1>Hello, World!</h1>
-      <p>Welcome to your new Go web project.</p>
-      <p>Click <a href="/login">HERE</a> to login</p>
+<div class="row">
+  <div class="col-sm-6">
+    <h2>Words</h2>
+  </div>
+  <div class="col-sm-6">
+    <h2>Popular Phrases</h2>
+  </div>
+</div>
+<div class="row">
+  <div class="col-sm-6">
+    <div class="list-group list-group-flush">
+      <!-- {{range .}}
+      <div class="list-group-item">
+        <h5><a href="/word/{{.Text}}">{{.Text}}</a></h5>
+      </div>
+      {{end}} -->
+    </div>
+  </div>
+  <div class="col-sm-6">
+    <div class="list-group list-group-flush">
+      <div class="list-group-item">
+        <h5 class="mb-1">Trying to be the most fungi in the room does not leave mushroom for others'
+          humor.</h5>
+        <div>
+          <img src="star.svg" alt="">
+          <img src="star.svg" alt="">
+          <img src="star.svg" alt="">
+          <img src="star.svg" alt="">
+          <img src="star.svg" alt="">
+        </div>
+        <div class="d-flex justify-content-between">
+          <p class="mb-1"><a href="#">natcantgood</a></p>
+          <small>30 days ago</small>
+        </div>
+      </div>
+      <div class="list-group-item">
+        <h5 class="mb-1">Make like a tree and leaf</h5>
+        <div>
+          <img src="star.svg" alt="">
+          <img src="star.svg" alt="">
+          <img src="star.svg" alt="">
+          <img src="star.svg" alt="">
+          <img src="star.svg" alt="">
+        </div>
+        <div class="d-flex justify-content-between">
+          <p class="mb-1"><a href="#">alvarosness</a></p>
+          <small>5 days ago</small>
+        </div>
+      </div>
+      <div class="list-group-item">
+        <h5 class="mb-1">There is no axiom for what a pun is</h5>
+        <div>
+          <img src="star.svg" alt="">
+          <img src="star.svg" alt="">
+          <img src="star.svg" alt="">
+          <img src="star.svg" alt="">
+          <img src="star.svg" alt="">
+        </div>
+
+        <div class="d-flex justify-content-between">
+          <p class="mb-1"><a href="#">aronorth</a></p>
+          <small>15 days ago</small>
+        </div>
+      </div>
+      <div class="list-group-item">
+        <h5 class="mb-1">I was up knitting last night. I am sew tired.</h5>
+        <div>
+          <img src="star.svg" alt="">
+          <img src="star.svg" alt="">
+          <img src="star.svg" alt="">
+          <img src="star.svg" alt="">
+          <img src="star.svg" alt="">
+        </div>
+        <div class="d-flex justify-content-between">
+          <p class="mb-1"><a href="#">alvarosness</a></p>
+          <small>1 days ago</small>
+        </div>
+      </div>
+      <div class="list-group-item">
+        <h5 class="mb-1">All your Bayes are belong to us</h5>
+        <div>
+          <img src="star.svg" alt="">
+          <img src="star.svg" alt="">
+          <img src="star.svg" alt="">
+          <img src="star.svg" alt="">
+          <img src="star.svg" alt="">
+        </div>
+        <div class="d-flex justify-content-between">
+          <p class="mb-1"><a href="#">alvarosness</a></p>
+          <small>3 days ago</small>
+        </div>
+      </div>
     </div>
   </div>
 </div>

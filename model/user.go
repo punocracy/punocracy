@@ -18,7 +18,7 @@ const (
 type User struct {
 	UserID    int             `bson:"userID"`
 	Username  string          `bson:"username"`
-	Password  []byte          `bson:"passwordHash"`
+	Password  string          `bson:"passwordHash"`
 	Email     string          `bson:"email"`
 	PermLevel PermissionLevel `bson:"permLevel"`
 }

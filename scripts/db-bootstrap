@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+MYSQL_HOST=${MYSQL_TCP_PORT:-localhost}
+MYSQL_TCP_PORT=${MYSQL_TCP_PORT:-3306}
+MYSQL_USER=${MYSQL_USER:-root}
+MYSQL_PWD=${MYSQL_PWD:-""}
+
+for dbname in "punocracy" "punocracy_test"; do
+    dbname=${dbname//\-/_}
+
+    echo "Creating database $dbname..."
+    if [ -z "$MYSQL_PWD" ]; then
+	    mysqladmin --user $MYSQL_USER create $dbname
+    else
+	    mysqladmin --user $MYSQL_USER --password $MYSQL_PWD create $dbname
+    fi
+
+    MYSQL_DSN="mysql://$MYSQL_USER:$MYSQL_PWD@tcp($MYSQL_HOST:$MYSQL_TCP_PORT)/$dbname?parseTime=true"
+    echo "Running migrations on '$MYSQL_DSN'..."
+    migrate -url "$MYSQL_DSN" -path $SCRIPT_DIR/../migrations up
+done

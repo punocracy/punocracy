@@ -1,14 +1,36 @@
 package handlers
 
 import (
-	"html/template"
-	"net/http"
+    "github.com/alvarosness/punocracy/models"
+    "github.com/alvarosness/punocracy/libhttp"
+    "github.com/gorilla/sessions"
+    "html/template"
+    "net/http"
 )
 
-// HomeHandler handles the main page
-func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
+func GetHome(w http.ResponseWriter, r *http.Request) {
+    w.Header().Set("Content-Type", "text/html")
 
-	t, _ := template.ParseFiles("templates/dashboard.html.tmpl", "templates/home.html.tmpl")
-	t.Execute(w, nil)
+    sessionStore := r.Context().Value( "sessionStore").(sessions.Store)
+
+    session, _ := sessionStore.Get(r, "punocracy-session")
+    currentUser, ok := session.Values["user"].(*models.UserRow)
+    if !ok {
+        http.Redirect(w, r, "/logout", 302)
+        return
+    }
+
+    data := struct {
+        CurrentUser *models.UserRow
+    }{
+        currentUser,
+    }
+
+    tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/home.html.tmpl")
+    if err != nil {
+        libhttp.HandleErrorJson(w, err)
+        return
+    }
+
+    tmpl.Execute(w, data)
 }
