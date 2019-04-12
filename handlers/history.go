@@ -147,7 +147,7 @@ func GetAbout(w http.ResponseWriter, r *http.Request) {
 		currentUser,
 	}
 
-	tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/home.html.tmpl")
+	tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/about.html.tmpl")
 	if err != nil {
 		libhttp.HandleErrorJson(w, err)
 		return
