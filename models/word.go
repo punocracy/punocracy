@@ -1,4 +1,4 @@
-package model
+package models
 
 // Word is the core of our project
 type Word struct {
