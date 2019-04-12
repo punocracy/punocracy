@@ -1,17 +1,19 @@
+// Data structures for our MongoDB data.
+
 package model
 
 import "time"
 
-// Rating is the number of ratings per phrase
+// Rating maps the number of ratings of each star type. Allows computation of average rating
 type Rating struct {
-	OneStar   int
-	TwoStar   int
-	ThreeStar int
-	FourStar  int
-	FiveStar  int
+	OneStar   int `bson:"one"`
+	TwoStar   int `bson:"two"`
+	ThreeStar int `bson:"three"`
+	FourStar  int `bson:"four"`
+	FiveStar  int `bson:"five"`
 }
 
-// Phrase is another core of our project
+// Phrase data structure format in MongoDB according to diagram
 type Phrase struct {
 	PhraseID        string    `bson:"_id"`
 	SubmitterUserID int       `bson:"submitterUserID"`
