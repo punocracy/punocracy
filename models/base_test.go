@@ -2,11 +2,11 @@ package models
 
 import (
 	"fmt"
+	"github.com/alvarosness/punocracy/libstring"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
-	"github.com/alvarosness/punocracy/libstring"
-	"testing"
 	"strings"
+	"testing"
 )
 
 func newEmailForTest() string {

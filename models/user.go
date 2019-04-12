@@ -17,10 +17,26 @@ func NewUser(db *sqlx.DB) *User {
 	return user
 }
 
+// PermissionLevel defines the level of privileges a user has
+type PermissionLevel int
+
+const (
+	// Administrator is the user with the highest privilege
+	Administrator PermissionLevel = iota + 1
+	// Curator is the user that reviews user submitted phrases
+	Curator
+	// RegularUser is the user that can rate and submit phrases
+	RegularUser
+	// NonUser is self explanatory
+	NonUser
+)
+
 type UserRow struct {
-	ID       int64  `db:"id"`
-	Email    string `db:"email"`
-	Password string `db:"password"`
+	ID        int64           `db:"id"`
+	Username  string          `db:"username"`
+	Email     string          `db:"email"`
+	Password  string          `db:"password"`
+	PermLevel PermissionLevel `db:"permLevel"`
 }
 
 type User struct {

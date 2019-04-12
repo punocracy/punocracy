@@ -1,6 +1,6 @@
 // Data structures for our MongoDB data.
 
-package model
+package models
 
 import "time"
 
