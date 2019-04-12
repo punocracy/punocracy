@@ -65,14 +65,13 @@ func (app *Application) mux() *gorilla_mux.Router {
 	router.HandleFunc("/history", handlers.GetHistory).Methods("GET")
 	router.HandleFunc("/history", handlers.PostHistory).Methods("POST")
 
-	router.HandleFunc("/words", handlers.GetWords).Methods("GET")
+	router.HandleFunc("/words{/[a-z]}", handlers.GetWords).Methods("GET")
 	router.HandleFunc("/words", handlers.PostWords).Methods("POST")
 
 	router.HandleFunc("/queuerater", handlers.GetCurator).Methods("GET")
 	router.HandleFunc("/queuerater", handlers.PostCurator).Methods("POST")
 
 	router.HandleFunc("/about", handlers.GetAbout).Methods("GET")
-	router.HandleFunc("/about", handlers.PostAbout).Methods("POST")
 
 	router.HandleFunc("/signup", handlers.GetSignup).Methods("GET")
 	router.HandleFunc("/signup", handlers.PostSignup).Methods("POST")

@@ -87,7 +87,7 @@ func GetWords(w http.ResponseWriter, r *http.Request) {
 		currentUser,
 	}
 
-	tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/home.html.tmpl")
+	tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/word.html.tmpl")
 	if err != nil {
 		libhttp.HandleErrorJson(w, err)
 		return
@@ -154,8 +154,4 @@ func GetAbout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tmpl.Execute(w, data)
-}
-
-func PostAbout(w http.ResponseWriter, r *http.Request) {
-
 }
