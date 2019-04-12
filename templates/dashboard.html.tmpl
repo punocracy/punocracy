@@ -16,9 +16,9 @@
 </head>
 
 <body>
-  <nav class="navbar navbar-expand-lg navbar-light">
+  <nav class="navbar navbar-expand-lg navbar-default">
     <!-- Brand and toggle get grouped for better mobile display -->
-    <a class="navbar-brand" href="#"><img src="/logo_transparent.png" width="40" height="40"></a>
+    <a class="navbar-brand" href="/"><img src="/logo_transparent.png" width="40" height="40"></a>
 
     <div class="collapse navbar-collapse">
 
@@ -38,7 +38,7 @@
               <a href="/history">History</a>
             </li>
             <li>
-              <a href="/curator">Curator Dashboard</a>
+              <a href="/queuerater">Curator Dashboard</a>
             </li>
             <li class="divider"></li>
 
@@ -94,7 +94,7 @@
   </div>
 
   <div class="container text-center">
-    {{template "content"}}
+    {{template "content" .}}
   </div>
 
   <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
