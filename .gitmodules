@@ -1,0 +1,3 @@
+[submodule "alphwordlist"]
+	path = alphwordlist
+	url = ../../aronorth/alphwordlist
