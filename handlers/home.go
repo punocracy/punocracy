@@ -9,11 +9,13 @@ import (
 	"github.com/gorilla/sessions"
 )
 
-// type HomeRow struct {
-// 	Words   []string
-// 	Phrases []string
-// }
+type homePageData struct {
+	CurrentUser *models.UserRow
+	Words       []string
+	Phrases     []string
+}
 
+// GetHome generates the home page of the system
 func GetHome(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
@@ -26,28 +28,17 @@ func GetHome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	words := []string{"Quill", "Fun", "Pun"}
-	// words := []string{}
-	phrases := []string{}
-	// phrases := []string{"All your Bayes are belong to us", "I was up kniting all night last night. I am sew tired."}
+	// TODO: Query DB for random words and top rated phrases
 
-	data := struct {
-		CurrentUser *models.UserRow
-		Words       []string
-		Phrases     []string
-	}{
-		currentUser,
-		words,
-		phrases,
-	}
+	pageData := homePageData{CurrentUser: currentUser, Words: nil, Phrases: nil}
 
-	tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/home.html.tmpl")
+	tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/search.html.tmpl", "templates/home.html.tmpl")
 	if err != nil {
 		libhttp.HandleErrorJson(w, err)
 		return
 	}
 
-	tmpl.Execute(w, data)
+	tmpl.Execute(w, pageData)
 }
 
 func PostHome(w http.ResponseWriter, r *http.Request) {
@@ -68,7 +59,7 @@ func PostHome(w http.ResponseWriter, r *http.Request) {
 		currentUser,
 	}
 
-	tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/home.html.tmpl")
+	tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/search.html.tmpl", "templates/query.html.tmpl")
 	if err != nil {
 		libhttp.HandleErrorJson(w, err)
 		return

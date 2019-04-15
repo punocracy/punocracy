@@ -1,26 +1,6 @@
 {{define "content"}}
-<div class="row align-items-center">
-  <div class="col-sm-12">
-    <h2>Input a word for an awesome pun</h2>
-  </div>
-</div>
-<div class="row align-items-center">
-  <div class="col-sm-12">
-    <form class="form" method="post" action="/">
-      <div class="input-group">
-        <input type="text" class="form-control" id="wordInput" placeholder="Quill">
-        <div class="input-group-append">
-          <button class="btn btn-outline-secondary" type="button"><img src="search.svg"></button>
-        </div>
-      </div>
-    </form>
-  </div>
-</div>
-
-
 <div class="row">
   <div class="col-sm-6">
-    <!-- <div class="container"> -->
       <h2>Words</h2>
       <div class="list-group list-group-flush">
         {{if .Words}}
@@ -31,10 +11,9 @@
         {{end}}
         {{else}}
         <div class="list-group-item">
-          <h5>There aren't Any popular words yet</h5>
+          <h5>There aren't any words yet :(</h5>
         </div>
         {{end}}
-      <!-- </div> -->
     </div>
   </div>
 
@@ -60,8 +39,8 @@
       {{end}}
       {{else}}
       <div class="list-group-item">
-        <h5>There aren't Any popular phrases yet.</h5>
-        <h5>Why not input your own phrase <a href="#">here</a>?</h5>
+        <h5>There aren't any popular phrases yet.</h5>
+        <h5>Why not submit your own phrase <a href="#">here</a>?</h5>
       </div>
       {{end}}
     </div>

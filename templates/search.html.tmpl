@@ -1,0 +1,19 @@
+{{define "searchbar"}}
+<div class="row align-items-center">
+  <div class="col-sm-12">
+    <h2>Input a word for an awesome pun</h2>
+  </div>
+</div>
+<div class="row align-items-center">
+  <div class="col-sm-12">
+    <form class="form" method="post" action="/">
+      <div class="input-group">
+        <input type="text" class="form-control" id="wordInput" placeholder="Quill">
+        <div class="input-group-append">
+          <button class="btn btn-outline-secondary" type="button"><img src="search.svg"></button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{{end}}

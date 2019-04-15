@@ -58,6 +58,7 @@ func (app *Application) mux() *gorilla_mux.Router {
 	router := gorilla_mux.NewRouter()
 
 	router.Handle("/", http.HandlerFunc(handlers.GetHome)).Methods("GET")
+	router.Handle("/", http.HandlerFunc(handlers.PostHome)).Methods("POST")
 
 	router.HandleFunc("/submit", handlers.GetSubmit).Methods("GET")
 	router.HandleFunc("/submit", handlers.PostSubmit).Methods("POST")
