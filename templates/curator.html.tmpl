@@ -1,0 +1,37 @@
+{{define "content"}}
+<form action="/queuerater" method="post">
+  <div class="form-row">
+      <div class="form-group col-md-9">
+          <input type="text" readonly class="form-control-plaintext" name="Phrase0"  value="This is an aweosme pun">
+      </div>
+      <div class="form-group col-md-1">
+          <input class="form-check-input position-static" type="radio" name="Status[Phrase0]" value="accept" aria-label="...">
+      </div>
+      <div class="form-group col-md-1">
+          <input class="form-check-input position-static" type="radio" name="Status[Phrase0]" value="reject" aria-label="...">
+      </div>
+      <div class="form-group col-md-1">
+          <input class="form-check-input position-static" type="radio" name="Status[Phrase0]" value="review" aria-label="...">
+      </div>
+  </div>
+  <div class="form-row">
+      <div class="form-group col-md-9">
+          <input type="text" readonly class="form-control-plaintext" name="Phrase1"  value="This is an aweosme pun">
+      </div>
+      <div class="form-group col-md-1">
+          <input class="form-check-input position-static" type="radio" name="Status[Phrase1]" value="accept" aria-label="...">
+      </div>
+      <div class="form-group col-md-1">
+          <input class="form-check-input position-static" type="radio" name="Status[Phrase1]" value="reject" aria-label="...">
+      </div>
+      <div class="form-group col-md-1">
+          <input class="form-check-input position-static" type="radio" name="Status[Phrase1]" value="review" aria-label="...">
+      </div>
+  </div>
+  <div class="form-row text-right">
+    <div class="col-md-12">
+      <button class="btn btn-primary" type="submit">Submit</button>
+    </div>
+  </div>
+</form>
+{{end}}

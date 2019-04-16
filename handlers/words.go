@@ -34,7 +34,7 @@ func GetWords(w http.ResponseWriter, r *http.Request) {
 
 	pageData := wordPageData{CurrentUser: currentUser, Words: nil} //[]string{"This", "and", "that"}}
 
-	tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/word.html.tmpl")
+	tmpl, err := template.ParseFiles("templates/dashboard-nosearch.html.tmpl", "templates/word.html.tmpl")
 	if err != nil {
 		libhttp.HandleErrorJson(w, err)
 		return
