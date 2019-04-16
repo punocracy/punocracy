@@ -4,7 +4,6 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/alvarosness/punocracy/libhttp"
 	"github.com/alvarosness/punocracy/models"
 	"github.com/go-playground/form"
@@ -16,6 +15,7 @@ type curatorPageData struct {
 	Phrases     []string
 }
 
+// I was testing the "github.com/go-playground/form" library. This helped with parsing array/struct/map like input from html forms
 type TestData struct {
 	Status map[string]string
 }
@@ -36,6 +36,8 @@ func GetCurator(w http.ResponseWriter, r *http.Request) {
 	// TODO: Check if user is curator
 	// if not curator redirect to main page
 
+	// TODO: Query DB for a max number of phrases to be reviewed
+
 	data := curatorPageData{CurrentUser: currentUser, Phrases: nil}
 
 	tmpl, err := template.ParseFiles("templates/dashboard-nosearch.html.tmpl", "templates/curator.html.tmpl")
@@ -49,16 +51,6 @@ func GetCurator(w http.ResponseWriter, r *http.Request) {
 
 // PostCurator handles POST requests to the system
 func PostCurator(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	dec := form.NewDecoder()
-	vals := r.Form
-
-	var res TestData
-
-	dec.Decode(&res, vals)
-	logrus.Infoln(res)
-	logrus.Infoln(res.Status["Phrase0"])
-
 	w.Header().Set("Content-Type", "text/html")
 
 	sessionStore := r.Context().Value("sessionStore").(sessions.Store)
@@ -72,6 +64,16 @@ func PostCurator(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: Check if user is curator
 	// if not curator redirect to main page
+
+	r.ParseForm()
+	dec := form.NewDecoder()
+
+	var res TestData
+
+	dec.Decode(&res, r.Form)
+	// TODO: Update DB based on the status of each of the reviewed phrases
+
+	// TODO: Load more phrases from DB to put on the view
 
 	data := curatorPageData{CurrentUser: currentUser, Phrases: nil}
 
