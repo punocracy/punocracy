@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"net/http"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/alvarosness/punocracy/libhttp"
 	"github.com/alvarosness/punocracy/models"
 	"github.com/gorilla/sessions"
@@ -13,6 +14,12 @@ type homePageData struct {
 	CurrentUser *models.UserRow
 	Words       []string
 	Phrases     []string
+}
+
+type resultPageData struct {
+	CurrentUser *models.UserRow
+	FoundWord   bool
+	Puns        []string
 }
 
 // GetHome generates the home page of the system
@@ -41,8 +48,10 @@ func GetHome(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, pageData)
 }
 
+// PostHome posts home
 func PostHome(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
+	logrus.Infoln(r.URL.Path)
 
 	sessionStore := r.Context().Value("sessionStore").(sessions.Store)
 
@@ -53,11 +62,11 @@ func PostHome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := struct {
-		CurrentUser *models.UserRow
-	}{
-		currentUser,
-	}
+	// word := r.FormValue("queryWord")
+	// TODO: Query DB for words in the same word group
+	// TODO: Query DB for phrases and perform word replacement
+
+	pageData := resultPageData{CurrentUser: currentUser, FoundWord: false, Puns: nil}
 
 	tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/search.html.tmpl", "templates/query.html.tmpl")
 	if err != nil {
@@ -65,5 +74,5 @@ func PostHome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmpl.Execute(w, data)
+	tmpl.Execute(w, pageData)
 }
