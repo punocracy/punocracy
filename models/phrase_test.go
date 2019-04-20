@@ -2,13 +2,28 @@ package models
 
 import (
 	"context"
+	"github.com/jmoiron/sqlx"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"strings"
 	"testing"
 	"time"
 )
+
+// Connect to SQL database
+func newDBConnection() (*sqlx.DB, error) {
+	// DSN string
+	defaultDSN := strings.Replace("nathaniel:nathaniel@tcp(localhost:3306)/punocracy?parseTime=true", "-", "_", -1)
+
+	// Connect to DB
+	db, err := sqlx.Connect("mysql", defaultDSN)
+	if err != nil {
+		return nil, err
+	}
+	return db, nil
+}
 
 // Get the testing user
 func newTestUser() UserRow {
@@ -48,54 +63,78 @@ func connectToMongo(urlString string) (*mongo.Database, error) {
 	return client.Database("punocracy"), nil
 }
 
-// Test phrase insertion function
-//func TestInsertCandidatePhrase(t *testing.T) {
-//	// Connect to MongoDB with default URL string
-//	db, err := connectToMongo("mongodb://localhost:27017")
-//	if err != nil {
-//		t.Fatal(err)
-//	}
-//
-//	// Get the phrases collection from the cool_songs database
-//	phrasesCollection := NewInReviewConnection(db)
-//
-//	// Example UserRow
-//	testUser := newTestUser()
-//
-//	// Test cases
-//	var testPhrases = []struct {
-//		input  string
-//		output bool
-//	}{
-//		{"All your base are belong to us.", true},      // Homophones: all, are, base, to, your
-//		{"This has zero homophones within it.", false}, // No homophones
-//	}
-//
-//	// Insert each phrase
-//	for _, phrase := range testPhrases {
-//		// Try to insert the phrase
-//		var successVal bool
-//		err := InsertPhrase(phrase.input, testUser, phrasesCollection)
-//		successVal = (err == nil)
-//
-//		// Check the value
-//		if successVal != phrase.output {
-//			t.Error("Phrase: ", phrase.input, " not inserted successfully.")
-//		}
-//
-//	}
-//}
+// Test fake query for word IDs
+func TestFakeGetWordIDList(t *testing.T) {
+	// Connect to database
+	db, err := newDBConnection()
+	if err != nil {
+		t.Fatal(err)
+	}
 
-// Test InsertPhrase directly
-func TestInsertPhrase(t *testing.T) {
+	// Get word IDs
+	wordIds, err := fakeGetWordIDList([]string{"base", "two", "mom"}, db)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Print the result
+	t.Log(wordIds)
+}
+
+// Test phrase insertion function
+func TestInsertCandidatePhrase(t *testing.T) {
 	// Connect to MongoDB with default URL string
-	db, err := connectToMongo("mongodb://localhost:27017")
+	mongoDB, err := connectToMongo("mongodb://localhost:27017")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Get the phrases collection from the cool_songs database
-	phrasesCollection := NewPhraseConnection(db)
+	phrasesCollection := NewInReviewConnection(mongoDB)
+
+	// Connect to database
+	sqlDB, err := newDBConnection()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Example UserRow
+	testUser := newTestUser()
+
+	// Test cases
+	var testPhrases = []struct {
+		input  string
+		output bool
+	}{
+		{"All your base are belong to us.", true},      // Homophones: all, are, base, to, your
+		{"This has zero homophones within it.", false}, // No homophones
+	}
+
+	// Insert each phrase
+	for _, phrase := range testPhrases {
+		// Try to insert the phrase
+		var successVal bool
+		err := InsertPhrase(phrase.input, testUser, phrasesCollection)
+		successVal = (err == nil)
+
+		// Check the value
+		if successVal != phrase.output {
+			t.Error("Phrase: ", phrase.input, " not inserted successfully.")
+		}
+
+	}
+}
+
+// Test InsertPhrase directly
+func TestInsertPhrase(t *testing.T) {
+	// Connect to MongoDB with default URL string
+	mongoDB, err := connectToMongo("mongodb://localhost:27017")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Get the phrases collection from the cool_songs database
+	phrasesCollection := NewPhraseConnection(mongoDB)
 
 	// Get test user
 	testUser := newTestUser()
@@ -109,7 +148,7 @@ func TestInsertPhrase(t *testing.T) {
 		SubmitterUserID: testUser.ID,
 		SubmissionDate:  time.Now(),
 		Ratings:         emptyRating,
-		WordList:        []int{588, 817},
+		WordList:        []int64{588, 817},
 		PhraseText:      "The base of the project.",
 	}
 
@@ -133,13 +172,13 @@ func TestInsertPhrase(t *testing.T) {
 // Test the GetPhraseList object
 //func TestGetPhraseList(t *testing.T) {
 //	// Connect to MongoDB with default URL string
-//	db, err := connectToMongo("mongodb://localhost:27017")
+//	mongoDB, err := connectToMongo("mongodb://localhost:27017")
 //	if err != nil {
 //		t.Fatal(err)
 //	}
 //
 //	// Get the phrases collection from the cool_songs database
-//	phrases := NewPhraseConnection(db)
+//	phrases := NewPhraseConnection(mongoDB)
 //
 //	// List of words for phrase query
 //	//	var wordList = []Word{

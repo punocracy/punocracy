@@ -4,9 +4,12 @@ package models
 
 import (
 	"context"
+	"errors"
+	"github.com/jmoiron/sqlx"
 	//"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"strings"
 	"time"
 )
 
@@ -25,7 +28,7 @@ type Phrase struct {
 	SubmitterUserID int64              `bson:"submitterUserID"`
 	SubmissionDate  time.Time          `bson:"submissionDate"`
 	Ratings         Rating             `bson:"ratings"`
-	WordList        []int              `bson:"wordList"`
+	WordList        []int64            `bson:"wordList"`
 	ApprovedBy      int64              `bson:"approvedBy"`
 	ApprovalDate    time.Time          `bson:"approvalDate"`
 	PhraseText      string             `bson:"phraseText"`
@@ -41,8 +44,72 @@ func NewInReviewConnection(db *mongo.Database) *mongo.Collection {
 	return db.Collection("inReview")
 }
 
+func fakeGetWordIDList(words []string, db *sqlx.DB) ([]int, error) {
+	// Build query string
+	queryString := "SELECT wordID FROM Words_T WHERE word IN ("
+	for i := 0; i < len(words)-1; i++ {
+		queryString += "'" + words[i] + "',"
+	}
+	queryString += "'" + words[len(words)-1] + "')"
+
+	// Execute the query on the database
+	var wordIDs []int
+	err := db.Select(&wordIDs, queryString)
+	if err != nil {
+		return []int{}, err
+	}
+
+	// Query the database
+	return wordIDs, nil
+}
+
 // Insert a candidate phrase submitted by a user
-func InsertCandidatePhrase(phraseText string, creator UserRow, inReviewCollection *mongo.Collection) error {
+func InsertCandidatePhrase(phraseText string, creator UserRow, sqlDB *sqlx.DB, inReviewCollection *mongo.Collection) error {
+	// Split into lowercase words by space character
+	allWords := strings.Split(strings.ToLower(phraseText), " ")
+
+	// Get all unique words
+	wordMap := make(map[string]bool)
+	for _, word := range allWords {
+		if _, ok := wordMap[word]; !ok {
+			wordMap[word] = true
+		}
+	}
+
+	var uniqueWords []string
+	for word := range wordMap {
+		uniqueWords = append(uniqueWords, word)
+	}
+
+	// Query the database to check if any of the words are homophones
+	// TODO: replace with safe function
+	wordIds, err := fakeGetWordIDList(uniqueWords, sqlDB)
+	if err != nil {
+		return err
+	}
+
+	// Check if the list is empty and return error
+	if len(wordIDs) == 0 {
+		return errors.New("Error: no homophones in candidate phrase.")
+	}
+
+	// Create the full record
+	candPhrase := Phrase{
+		PhraseID:        primitive.NewObjectID(),
+		SubmitterUserID: creator.ID,
+		SubmissionDate:  time.Now(),
+		Ratings:         Rating{},
+		WordList:        wordIDs,
+		PhraseText:      phraseText,
+	}
+
+	// Insert into collection
+	_, err := inReviewCollection.InsertOne(context.Background(), candPhrase)
+	if err != nil {
+		return err
+	}
+
+	// Insert the record
 	return nil
 }
 
