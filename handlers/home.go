@@ -29,11 +29,12 @@ func GetHome(w http.ResponseWriter, r *http.Request) {
 	sessionStore := r.Context().Value("sessionStore").(sessions.Store)
 
 	session, _ := sessionStore.Get(r, "punocracy-session")
-	currentUser, ok := session.Values["user"].(*models.UserRow)
-	if !ok {
-		http.Redirect(w, r, "/logout", 302)
-		return
-	}
+	currentUser, _ := session.Values["user"].(*models.UserRow)
+	logrus.Infoln(currentUser)
+	// if !ok {
+	// 	// http.Redirect(w, r, "/logout", 302)
+	// 	return
+	// }
 
 	// TODO: Query DB for random words and top rated phrases
 
