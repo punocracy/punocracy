@@ -178,28 +178,27 @@ func TestInsertPhrase(t *testing.T) {
 }
 
 // Test the GetPhraseList object
-//func TestGetPhraseList(t *testing.T) {
-//	// Connect to MongoDB with default URL string
-//	mongoDB, err := connectToMongo("mongodb://localhost:27017")
-//	if err != nil {
-//		t.Fatal(err)
-//	}
-//
-//	// Get the phrases collection from the cool_songs database
-//	phrases := NewPhraseConnection(mongoDB)
-//
-//	// List of words for phrase query
-//	//	var wordList = []Word{
-//	//		{
-//
-//	// Query for songs
-//	songList, err := ArrayQuery(songs)
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//
-//	// Print songlist
-//	for _, s := range songList {
-//		fmt.Println(s)
-//	}
-//}
+func TestGetPhraseList(t *testing.T) {
+	// Connect to MongoDB with default URL string
+	mongoDB, err := connectToMongo("mongodb://localhost:27017")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Get the phrases collection from the cool_songs database
+	phrases := NewPhraseConnection(mongoDB)
+
+	// List of words for phrase query
+	var wordList = []Word{
+		{189, "two", 625},
+		{831, "too", 625},
+		//{1414, "two", 625},
+	}
+
+	// Query for phrase list
+	phraseList, err := GetPhraseList(wordList)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+}

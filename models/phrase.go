@@ -122,7 +122,6 @@ func InsertPhrase(phrase Phrase, approver UserRow, phrasesCollection *mongo.Coll
 	phrase.ApprovalDate = time.Now()
 
 	// Insert into phrases collection and propagate error
-	// TODO: check first return value???
 	_, err := phrasesCollection.InsertOne(context.Background(), phrase)
 	if err != nil {
 		return err
