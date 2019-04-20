@@ -100,6 +100,8 @@ func InsertCandidatePhrase(phraseText string, creator UserRow, sqlDB *sqlx.DB, i
 		SubmissionDate:  time.Now(),
 		Ratings:         Rating{},
 		WordList:        wordIDs,
+		ApprovedBy:      0,
+		ApprovalDate:    nil,
 		PhraseText:      phraseText,
 	}
 
@@ -128,6 +130,10 @@ func InsertPhrase(phrase Phrase, approver UserRow, phrasesCollection *mongo.Coll
 
 	return nil
 }
+
+// TODO list:
+//  - Get phrases for curators, take in max number of phrases
+//  - Get phrases for display from the homophone list, ranked by rating, take in max number of phrases
 
 // Query for phrases from a list of words
 //func GetPhraseList(wordlist []Word, phrasesCollection *mongo.Collection) ([]Phrase, error) {
