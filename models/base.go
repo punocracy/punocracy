@@ -148,7 +148,7 @@ func (b *Base) UpdateByID(tx *sqlx.Tx, data map[string]interface{}, id int64) (s
 	values = append(values, id)
 
 	query := fmt.Sprintf(
-		"UPDATE %v SET %v WHERE id=?",
+		"UPDATE %v SET %v WHERE userID=?",
 		b.table,
 		strings.Join(keysWithQuestionMarks, ","))
 
@@ -260,7 +260,7 @@ func (b *Base) DeleteById(tx *sqlx.Tx, id int64) (sql.Result, error) {
 		return nil, err
 	}
 
-	query := fmt.Sprintf("DELETE FROM %v WHERE id=?", b.table)
+	query := fmt.Sprintf("DELETE FROM %v WHERE userID=?", b.table)
 
 	result, err = tx.Exec(query, id)
 

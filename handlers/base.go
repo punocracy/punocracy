@@ -10,7 +10,7 @@ import (
 )
 
 func getIDFromPath(w http.ResponseWriter, r *http.Request) (int64, error) {
-	idString := mux.Vars(r)["id"]
+	idString := mux.Vars(r)["userID"]
 	if idString == "" {
 		return -1, errors.New("user id cannot be empty")
 	}

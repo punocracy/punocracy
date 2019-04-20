@@ -35,7 +35,7 @@ const (
 )
 
 type UserRow struct {
-	ID        int64           `db:"id"`
+	ID        int64           `db:"userID"`
 	Username  string          `db:"username"`
 	Email     string          `db:"email"`
 	Password  string          `db:"password"`
@@ -69,7 +69,7 @@ func (u *User) AllUsers(tx *sqlx.Tx) ([]*UserRow, error) {
 // GetByID returns record by id.
 func (u *User) GetByID(tx *sqlx.Tx, id int64) (*UserRow, error) {
 	user := &UserRow{}
-	query := fmt.Sprintf("SELECT * FROM %v WHERE id=?", u.table)
+	query := fmt.Sprintf("SELECT * FROM %v WHERE userID=?", u.table)
 	err := u.db.Get(user, query, id)
 
 	return user, err
