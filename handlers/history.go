@@ -27,7 +27,7 @@ func GetHistory(w http.ResponseWriter, r *http.Request) {
 		currentUser,
 	}
 
-	tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/home.html.tmpl")
+	tmpl, err := template.ParseFiles("templates/dashboard-nosearch.html.tmpl", "templates/history.html.tmpl")
 	if err != nil {
 		libhttp.HandleErrorJson(w, err)
 		return
