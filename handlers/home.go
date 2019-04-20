@@ -24,6 +24,11 @@ type resultPageData struct {
 	Puns        []string
 }
 
+// HandleRoot redirects to now
+func HandleRoot(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/now", 302)
+}
+
 // GetHome generates the home page of the system
 func GetHome(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
