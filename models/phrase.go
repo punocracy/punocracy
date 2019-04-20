@@ -35,9 +35,30 @@ func NewPhraseConnection(db *mongo.Database) *mongo.Collection {
 	return db.Collection("phrases")
 }
 
-// Insert a phrase into the database using all the good stuff
-func InsertPhrase(phrase string, creator UserRow, phrasesCollection *mongo.Collection) error {
+// Create a new instance of the phrase collection
+func NewInReviewConnection(db *mongo.Database) *mongo.Collection {
+	return db.Collection("inReview")
+}
 
+// Insert a candidate phrase submitted by a user
+func InsertCandidatePhrase(phraseText string, creator UserRow, inReviewCollection *mongo.Collection) error {
+
+}
+
+// Insert a phrase into the phrases from candidate phrase
+func InsertPhrase(phrase Phrase, approver UserRow, phrasesCollection *mongo.Collection) error {
+	// Set approver
+	phrase.ApprovedBy = approver.ID
+	phrase.ApprovalDate = time.Now()
+
+	// Insert into phrases collection and propagate error
+	// TODO: check first return value???
+	_, err := phrasesCollection.InsertOne(context.Background(), phrase)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Query for phrases from a list of words

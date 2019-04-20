@@ -10,6 +10,19 @@ import (
 	"time"
 )
 
+// Get the testing user
+func newTestUser() UserRow {
+	// Example UserRow
+	testUser := UserRow{
+		ID:        2,
+		Username:  "testerUser",
+		Email:     "test@testerson.com",
+		Password:  "asdf",
+		PermLevel: 0,
+	}
+	return testUser
+}
+
 // Connect to MongoDB instance
 func connectToMongo(urlString string) (*mongo.Database, error) {
 	// Connect to localhost
@@ -36,7 +49,7 @@ func connectToMongo(urlString string) (*mongo.Database, error) {
 }
 
 // Test phrase insertion function
-func TestInsertPhrase(t *testing.T) {
+func TestInsertCandidatePhrase(t *testing.T) {
 	// Connect to MongoDB with default URL string
 	db, err := connectToMongo("mongodb://localhost:27017")
 	if err != nil {
@@ -44,16 +57,10 @@ func TestInsertPhrase(t *testing.T) {
 	}
 
 	// Get the phrases collection from the cool_songs database
-	phrasesCollection := NewPhraseConnection(db)
+	phrasesCollection := NewInReviewConnection(db)
 
 	// Example UserRow
-	testUser := UserRow{
-		ID:        2,
-		Username:  "testerUser",
-		Email:     "test@testerson.com",
-		Password:  "asdf",
-		PermLevel: 0,
-	}
+	testUser := newTestUser()
 
 	// Test cases
 	var testPhrases = []struct {
@@ -77,6 +84,25 @@ func TestInsertPhrase(t *testing.T) {
 		}
 
 	}
+}
+
+// Test InsertPhrase directly
+func TestInsertPhrase(t *testing.T) {
+	// Connect to MongoDB with default URL string
+	db, err := connectToMongo("mongodb://localhost:27017")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Get the phrases collection from the cool_songs database
+	phrasesCollection := NewPhraseConnection(db)
+
+	// Get test user
+	testUser := newTestUser()
+
+	// Phrase example
+	tests := Phrase{
+
 }
 
 // Test the GetPhraseList object
