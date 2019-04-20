@@ -4,9 +4,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
-	"strings"
 )
 
 type Base struct {
@@ -37,12 +38,12 @@ func (b *Base) newTransactionIfNeeded(tx *sqlx.Tx) (*sqlx.Tx, bool, error) {
 
 func (b *Base) InsertIntoTable(tx *sqlx.Tx, data map[string]interface{}) (sql.Result, error) {
 	if b.table == "" {
-		return nil, errors.New("Table must not be empty.")
+		return nil, errors.New("table must not be empty")
 	}
 
 	tx, wrapInSingleTransaction, err := b.newTransactionIfNeeded(tx)
 	if tx == nil {
-		return nil, errors.New("Transaction struct must not be empty.")
+		return nil, errors.New("transaction struct must not be empty")
 	}
 	if err != nil {
 		return nil, err
