@@ -3,6 +3,7 @@
 package models
 
 import (
+	"errors"
 	_ "github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
 	"time"
@@ -29,18 +30,23 @@ type Phrase struct {
 	PhraseText      string        `bson:"phraseText"`
 }
 
+// Create a new instance of the phrase collection
+func NewPhraseConnection(db *mongo.Database) *mongo.Collection {
+	return db.Collection("phrases")
+}
+
 // Insert a phrase into the database using all the good stuff
-func InsertPhrase() error {
+func InsertPhrase(phrase string, creator UserRow, phrasesCollection *mongo.Collection) error {
 
 }
 
 // Query for phrases from a list of words
-func GetPhraseList(wordlist []Word, C *mongo.Collection) ([]Phrase, error) {
+func GetPhraseList(wordlist []Word, phrasesCollection *mongo.Collection) ([]Phrase, error) {
 	// Build the query document
 	var queryDocument bson.D
 
 	// Get a cursor pointing to the list of phrases as a result of the query
-	cur, err := C.Find(context.Background(), queryDocument)
+	cur, err := phrasesCollection.Find(context.Background(), queryDocument)
 	if err != nil {
 		log.fatal(err)
 	}
