@@ -9,6 +9,12 @@ import (
 	"github.com/gorilla/sessions"
 )
 
+type historyPageData struct {
+	CurrentUser      *models.UserRow
+	RatedPhrases     []string
+	SubmittedPhrases []string
+}
+
 // GetHistory generates a page showing the users' history of phrase ratings and phrase submissions
 func GetHistory(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
@@ -21,11 +27,8 @@ func GetHistory(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/logout", 302)
 		return
 	}
-	data := struct {
-		CurrentUser *models.UserRow
-	}{
-		currentUser,
-	}
+
+	pageData := historyPageData{currentUser, nil, nil}
 
 	tmpl, err := template.ParseFiles("templates/dashboard-nosearch.html.tmpl", "templates/history.html.tmpl")
 	if err != nil {
@@ -33,7 +36,7 @@ func GetHistory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmpl.Execute(w, data)
+	tmpl.Execute(w, pageData)
 }
 
 // PostHistory handles the update of user ratings for phrases

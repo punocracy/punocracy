@@ -32,7 +32,7 @@
         {{if .CurrentUser}}
         <li class="nav-item dropdown">
           <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button"
-            aria-expanded="false">{{ .CurrentUser.Email }}</a>
+            aria-expanded="false">{{ .CurrentUser.Username }}</a>
 
           <ul class="dropdown-menu" role="menu">
             <li>
@@ -41,9 +41,11 @@
             <li>
               <a href="/history">History</a>
             </li>
+            {{if .IsCurator}}
             <li>
               <a href="/queuerater">Curator Dashboard</a>
             </li>
+            {{end}}
             <li class="divider"></li>
 
             <li><a href="/logout">Logout</a></li>

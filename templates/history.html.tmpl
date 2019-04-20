@@ -12,7 +12,7 @@
       {{else}}
       <div class="list-group-item">
         <h5>No phrases rated</h5>
-        <h5>Why not rate some of awesome phrases <a href="#">here</a>?</h5>
+        <h5>Why not rate some of awesome phrases <a href="/now">here</a>?</h5>
       </div>
       {{end}}
     </div>
@@ -21,8 +21,8 @@
   <div class="col-sm-6">
     <h2>Phrases Submitted</h2>
     <div class="list-group list-group-flush">
-      {{if .Phrases}}
-      {{range .Phrases}}
+      {{if .SubmittedPhrases}}
+      {{range .SubmittedPhrases}}
       <div class="list-group-item">
         <h5 class="mb-1">{{.}}</h5>
         <div class="d-flex justify-content-between">
@@ -30,6 +30,7 @@
         </div>
       </div>
       {{end}}
+      {{else}}
       <div class="list-group-item">
         <h5>No phrases submitted</h5>
         <h5>Why not submit your own phrase <a href="#">here</a>?</h5>

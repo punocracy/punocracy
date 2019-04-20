@@ -32,11 +32,12 @@ func PostSignup(w http.ResponseWriter, r *http.Request) {
 
 	db := r.Context().Value("db").(*sqlx.DB)
 
+	username := r.FormValue("Username")
 	email := r.FormValue("Email")
 	password := r.FormValue("Password")
 	passwordAgain := r.FormValue("PasswordAgain")
 
-	_, err := models.NewUser(db).Signup(nil, email, password, passwordAgain)
+	_, err := models.NewUser(db).Signup(nil, username, email, password, passwordAgain)
 	if err != nil {
 		libhttp.HandleErrorJson(w, err)
 		return
@@ -86,16 +87,14 @@ func PostLogin(w http.ResponseWriter, r *http.Request) {
 	db := r.Context().Value("db").(*sqlx.DB)
 	sessionStore := r.Context().Value("sessionStore").(sessions.Store)
 
-	email := r.FormValue("Email")
+	username := r.FormValue("Username")
 	password := r.FormValue("Password")
 
 	u := models.NewUser(db)
 
-	user, err := u.GetUserByEmailAndPassword(nil, email, password)
+	user, err := u.GetUserByUsernameAndPassword(nil, username, password)
 	if err != nil {
-		// TODO: Redirect to login page with an error message
-		libhttp.HandleErrorJson(w, err)
-		return
+		http.Redirect(w, r, "login/", http.StatusBadRequest)
 	}
 
 	session, _ := sessionStore.Get(r, "punocracy-session")

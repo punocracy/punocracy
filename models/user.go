@@ -4,14 +4,16 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+
 	"github.com/jmoiron/sqlx"
 	"golang.org/x/crypto/bcrypt"
 )
 
+// NewUser creates a new user
 func NewUser(db *sqlx.DB) *User {
 	user := &User{}
 	user.db = db
-	user.table = "users"
+	user.table = "Users_T"
 	user.hasID = true
 
 	return user
@@ -79,9 +81,18 @@ func (u *User) GetByEmail(tx *sqlx.Tx, email string) (*UserRow, error) {
 	return user, err
 }
 
-// GetByEmail returns record by email but checks password first.
-func (u *User) GetUserByEmailAndPassword(tx *sqlx.Tx, email, password string) (*UserRow, error) {
-	user, err := u.GetByEmail(tx, email)
+// GetByUsername retrieves a user for the db by username
+func (u *User) GetByUsername(tx *sqlx.Tx, username string) (*UserRow, error) {
+	user := &UserRow{}
+	query := fmt.Sprintf("SELECT * FROM %v WHERE username=?", u.table)
+	err := u.db.Get(user, query, username)
+
+	return user, err
+}
+
+// GetUserByUsernameAndPassword returns record by email but checks password first.
+func (u *User) GetUserByUsernameAndPassword(tx *sqlx.Tx, username, password string) (*UserRow, error) {
+	user, err := u.GetByUsername(tx, username)
 	if err != nil {
 		return nil, err
 	}
@@ -95,15 +106,18 @@ func (u *User) GetUserByEmailAndPassword(tx *sqlx.Tx, email, password string) (*
 }
 
 // Signup create a new record of user.
-func (u *User) Signup(tx *sqlx.Tx, email, password, passwordAgain string) (*UserRow, error) {
+func (u *User) Signup(tx *sqlx.Tx, username, email, password, passwordAgain string) (*UserRow, error) {
+	if username == "" {
+		return nil, errors.New("username cannot be blank")
+	}
 	if email == "" {
-		return nil, errors.New("Email cannot be blank.")
+		return nil, errors.New("email cannot be blank")
 	}
 	if password == "" {
-		return nil, errors.New("Password cannot be blank.")
+		return nil, errors.New("password cannot be blank")
 	}
 	if password != passwordAgain {
-		return nil, errors.New("Password is invalid.")
+		return nil, errors.New("password is invalid")
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 5)
@@ -112,8 +126,10 @@ func (u *User) Signup(tx *sqlx.Tx, email, password, passwordAgain string) (*User
 	}
 
 	data := make(map[string]interface{})
+	data["username"] = username
 	data["email"] = email
-	data["password"] = hashedPassword
+	data["passwordHash"] = hashedPassword
+	data["permLevel"] = RegularUser
 
 	sqlResult, err := u.InsertIntoTable(tx, data)
 	if err != nil {
