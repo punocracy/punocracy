@@ -29,7 +29,44 @@ type Phrase struct {
 	PhraseText      string        `bson:"phraseText"`
 }
 
+// Insert a phrase into the database using all the good stuff
+func InsertPhrase() error {
+
+}
+
 // Query for phrases from a list of words
-func GetPhraseList(wordlist []Word) []Phrase {
-	// Query for the word
+func GetPhraseList(wordlist []Word, C *mongo.Collection) ([]Phrase, error) {
+	// Build the query document
+	var queryDocument bson.D
+
+	// Get a cursor pointing to the list of phrases as a result of the query
+	cur, err := C.Find(context.Background(), queryDocument)
+	if err != nil {
+		log.fatal(err)
+	}
+	defer cur.close(context.background())
+
+	// list of phrases
+	var phraseList []Phrase
+
+	// get query result and print
+	for cur.next(context.background()) {
+		// decode into struct
+		var onePhrase Phrase
+		//var onePhrase bson.d
+		err = cur.decode(&onePhrase)
+		if err != nil {
+			return nil, err
+		}
+		// append to phraseList
+		phraseList = append(phraseList, onePhrase)
+	}
+
+	// check for cursor errors
+	if err := cur.err(); err != nil {
+		return nil, err
+	}
+
+	// return the result
+	return phraseList, nil
 }
