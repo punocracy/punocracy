@@ -12,6 +12,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+// GetSignup generates the user signup page
 func GetSignup(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
@@ -24,6 +25,8 @@ func GetSignup(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, nil)
 }
 
+// PostSignup reads the new user's credentials and stores them in the user DB if they are valid
+// After signing up, the user is autmatically logged in.
 func PostSignup(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
@@ -39,10 +42,10 @@ func PostSignup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Perform login
 	PostLogin(w, r)
 }
 
+// GetLoginWithoutSession generates the login page without checking if an existing user has already logged in
 func GetLoginWithoutSession(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
@@ -55,7 +58,9 @@ func GetLoginWithoutSession(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, nil)
 }
 
-// GetLogin get login page.
+// GetLogin first checks if a user is already logged in.
+// If the user is already logged in, the user is redirected to the home page.
+// If not GetLoginWithoutSession is called
 func GetLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
@@ -72,7 +77,9 @@ func GetLogin(w http.ResponseWriter, r *http.Request) {
 	GetLoginWithoutSession(w, r)
 }
 
-// PostLogin performs login.
+// PostLogin handles user authentication.
+// If the user has an account in the system, he/she is redirected to the home page
+// If the user used the wrong credentials, redirect them to the login page with an error message.
 func PostLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
@@ -86,6 +93,7 @@ func PostLogin(w http.ResponseWriter, r *http.Request) {
 
 	user, err := u.GetUserByEmailAndPassword(nil, email, password)
 	if err != nil {
+		// TODO: Redirect to login page with an error message
 		libhttp.HandleErrorJson(w, err)
 		return
 	}
@@ -102,6 +110,7 @@ func PostLogin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", 302)
 }
 
+// GetLogout deletes the current user from the session and redirects to the main page
 func GetLogout(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
@@ -115,6 +124,7 @@ func GetLogout(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", 302)
 }
 
+// PostPutDeleteUsersID will redirect to either the PutUsersID or the DeleteUsersID handlers depending on the typpe of request
 func PostPutDeleteUsersID(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
@@ -126,8 +136,9 @@ func PostPutDeleteUsersID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// PutUsersID updates the user data
 func PutUsersID(w http.ResponseWriter, r *http.Request) {
-	userId, err := getIdFromPath(w, r)
+	userID, err := getIDFromPath(w, r)
 	if err != nil {
 		libhttp.HandleErrorJson(w, err)
 		return
@@ -141,8 +152,8 @@ func PutUsersID(w http.ResponseWriter, r *http.Request) {
 
 	currentUser := session.Values["user"].(*models.UserRow)
 
-	if currentUser.ID != userId {
-		err := errors.New("Modifying other user is not allowed.")
+	if currentUser.ID != userID {
+		err := errors.New("modifying other user is not allowed")
 		libhttp.HandleErrorJson(w, err)
 		return
 	}
@@ -170,8 +181,9 @@ func PutUsersID(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", 302)
 }
 
+// DeleteUsersID is not implemented
 func DeleteUsersID(w http.ResponseWriter, r *http.Request) {
-	err := errors.New("DELETE method is not implemented.")
+	err := errors.New("delete method is not implemented")
 	libhttp.HandleErrorJson(w, err)
 	return
 }

@@ -1,4 +1,4 @@
-package main
+package scripts
 
 import (
 	"bufio"
@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func main() {
+func parsehomophonsedata() {
 	fmt.Println("Parse data for loading into MySQL")
 
 	// Load CSV data into memory

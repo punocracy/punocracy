@@ -9,7 +9,7 @@ import (
 	"github.com/gorilla/sessions"
 )
 
-// GetHistory gets the best of the 90s
+// GetHistory generates a page showing the users' history of phrase ratings and phrase submissions
 func GetHistory(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
@@ -36,10 +36,12 @@ func GetHistory(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, data)
 }
 
+// PostHistory handles the update of user ratings for phrases
 func PostHistory(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// GetSubmit generates a page for logged in users to submit their own phrases.
 func GetSubmit(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
@@ -66,6 +68,9 @@ func GetSubmit(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, data)
 }
 
+// PostSubmit handles the submission of a phrase.
+// A phrase will be stored in the phrase DB as a phrase that needs to be reviewed.
+// It then redirects the user to the GetSubmit handler
 func PostSubmit(w http.ResponseWriter, r *http.Request) {
 
 }
