@@ -90,7 +90,7 @@ func TestInsertCandidatePhrase(t *testing.T) {
 	}
 
 	// Get the phrases collection from the cool_songs database
-	phrasesCollection := NewInReviewConnection(mongoDB)
+	inReviewPhrasesCollection := NewInReviewConnection(mongoDB)
 
 	// Connect to database
 	sqlDB, err := newDBConnection()
@@ -114,7 +114,7 @@ func TestInsertCandidatePhrase(t *testing.T) {
 	for _, phrase := range testPhrases {
 		// Try to insert the phrase
 		var successVal bool
-		err := InsertPhrase(phrase.input, testUser, phrasesCollection)
+		err := InsertCandidatePhrase(phrase.input, testUser, sqlDB, inReviewPhrasesCollection)
 		successVal = (err == nil)
 
 		// Check the value
@@ -122,6 +122,14 @@ func TestInsertCandidatePhrase(t *testing.T) {
 			t.Error("Phrase: ", phrase.input, " not inserted successfully.")
 		}
 
+	}
+
+	// Try to delete the phrases
+	for _, phrase := range testPhrases {
+		_, err = inReviewPhrasesCollection.DeleteOne(context.Background(), bson.M{"phraseText": phrase.input})
+		if err != nil {
+			t.Error(err)
+		}
 	}
 }
 
@@ -148,7 +156,7 @@ func TestInsertPhrase(t *testing.T) {
 		SubmitterUserID: testUser.ID,
 		SubmissionDate:  time.Now(),
 		Ratings:         emptyRating,
-		WordList:        []int64{588, 817},
+		WordList:        []int{588, 817},
 		PhraseText:      "The base of the project.",
 	}
 

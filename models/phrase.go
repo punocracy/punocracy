@@ -28,7 +28,7 @@ type Phrase struct {
 	SubmitterUserID int64              `bson:"submitterUserID"`
 	SubmissionDate  time.Time          `bson:"submissionDate"`
 	Ratings         Rating             `bson:"ratings"`
-	WordList        []int64            `bson:"wordList"`
+	WordList        []int              `bson:"wordList"`
 	ApprovedBy      int64              `bson:"approvedBy"`
 	ApprovalDate    time.Time          `bson:"approvalDate"`
 	PhraseText      string             `bson:"phraseText"`
@@ -83,7 +83,7 @@ func InsertCandidatePhrase(phraseText string, creator UserRow, sqlDB *sqlx.DB, i
 
 	// Query the database to check if any of the words are homophones
 	// TODO: replace with safe function
-	wordIds, err := fakeGetWordIDList(uniqueWords, sqlDB)
+	wordIDs, err := fakeGetWordIDList(uniqueWords, sqlDB)
 	if err != nil {
 		return err
 	}
@@ -104,7 +104,7 @@ func InsertCandidatePhrase(phraseText string, creator UserRow, sqlDB *sqlx.DB, i
 	}
 
 	// Insert into collection
-	_, err := inReviewCollection.InsertOne(context.Background(), candPhrase)
+	_, err = inReviewCollection.InsertOne(context.Background(), candPhrase)
 	if err != nil {
 		return err
 	}
