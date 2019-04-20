@@ -24,7 +24,7 @@ type PermissionLevel int
 
 const (
 	// Administrator is the user with the highest privilege
-	Administrator PermissionLevel = iota + 1
+	Administrator PermissionLevel = iota
 	// Curator is the user that reviews user submitted phrases
 	Curator
 	// RegularUser is the user that can rate and submit phrases
