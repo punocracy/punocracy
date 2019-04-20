@@ -1,5 +1,6 @@
 package models
-
+//talk to alvaro when its time to work on this
+//he made some changes
 import (
 	"database/sql"
 	"errors"
