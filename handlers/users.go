@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/alvarosness/punocracy/libhttp"
 	"github.com/alvarosness/punocracy/models"
 	"github.com/gorilla/sessions"
@@ -39,6 +40,7 @@ func PostSignup(w http.ResponseWriter, r *http.Request) {
 
 	_, err := models.NewUser(db).Signup(nil, username, email, password, passwordAgain)
 	if err != nil {
+		logrus.Infoln(err)
 		libhttp.HandleErrorJson(w, err)
 		return
 	}
@@ -163,7 +165,7 @@ func PutUsersID(w http.ResponseWriter, r *http.Request) {
 
 	u := models.NewUser(db)
 
-	currentUser, err = u.UpdateEmailAndPasswordById(nil, currentUser.ID, email, password, passwordAgain)
+	currentUser, err = u.UpdateEmailAndPasswordByID(nil, currentUser.ID, email, password, passwordAgain)
 	if err != nil {
 		libhttp.HandleErrorJson(w, err)
 		return

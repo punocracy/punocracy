@@ -45,13 +45,13 @@ type User struct {
 	Base
 }
 
-func (u *User) userRowFromSqlResult(tx *sqlx.Tx, sqlResult sql.Result) (*UserRow, error) {
-	userId, err := sqlResult.LastInsertId()
+func (u *User) userRowFromSQLResult(tx *sqlx.Tx, sqlResult sql.Result) (*UserRow, error) {
+	userID, err := sqlResult.LastInsertId()
 	if err != nil {
 		return nil, err
 	}
 
-	return u.GetById(tx, userId)
+	return u.GetByID(tx, userID)
 }
 
 // AllUsers returns all user rows.
@@ -63,8 +63,8 @@ func (u *User) AllUsers(tx *sqlx.Tx) ([]*UserRow, error) {
 	return users, err
 }
 
-// GetById returns record by id.
-func (u *User) GetById(tx *sqlx.Tx, id int64) (*UserRow, error) {
+// GetByID returns record by id.
+func (u *User) GetByID(tx *sqlx.Tx, id int64) (*UserRow, error) {
 	user := &UserRow{}
 	query := fmt.Sprintf("SELECT * FROM %v WHERE id=?", u.table)
 	err := u.db.Get(user, query, id)
@@ -136,11 +136,11 @@ func (u *User) Signup(tx *sqlx.Tx, username, email, password, passwordAgain stri
 		return nil, err
 	}
 
-	return u.userRowFromSqlResult(tx, sqlResult)
+	return u.userRowFromSQLResult(tx, sqlResult)
 }
 
-// UpdateEmailAndPasswordById updates user email and password.
-func (u *User) UpdateEmailAndPasswordById(tx *sqlx.Tx, userId int64, email, password, passwordAgain string) (*UserRow, error) {
+// UpdateEmailAndPasswordByID updates user email and password.
+func (u *User) UpdateEmailAndPasswordByID(tx *sqlx.Tx, userID int64, email, password, passwordAgain string) (*UserRow, error) {
 	data := make(map[string]interface{})
 
 	if email != "" {
@@ -157,11 +157,11 @@ func (u *User) UpdateEmailAndPasswordById(tx *sqlx.Tx, userId int64, email, pass
 	}
 
 	if len(data) > 0 {
-		_, err := u.UpdateByID(tx, data, userId)
+		_, err := u.UpdateByID(tx, data, userID)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	return u.GetById(tx, userId)
+	return u.GetByID(tx, userID)
 }
