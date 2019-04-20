@@ -2,11 +2,11 @@ package models
 
 import (
 	"context"
-	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
+	"testing"
 	"time"
 )
 
@@ -49,42 +49,42 @@ func connectToMongo(urlString string) (*mongo.Database, error) {
 }
 
 // Test phrase insertion function
-func TestInsertCandidatePhrase(t *testing.T) {
-	// Connect to MongoDB with default URL string
-	db, err := connectToMongo("mongodb://localhost:27017")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Get the phrases collection from the cool_songs database
-	phrasesCollection := NewInReviewConnection(db)
-
-	// Example UserRow
-	testUser := newTestUser()
-
-	// Test cases
-	var testPhrases = []struct {
-		input  string
-		output bool
-	}{
-		{"All your base are belong to us.", true},      // Homophones: all, are, base, to, your
-		{"This has zero homophones within it.", false}, // No homophones
-	}
-
-	// Insert each phrase
-	for _, phrase := range testPhrases {
-		// Try to insert the phrase
-		var successVal bool
-		err := InsertPhrase(phrase.input, testUser, phrasesCollection)
-		successVal = (err == nil)
-
-		// Check the value
-		if successVal != phrase.output {
-			t.Error("Phrase: ", phrase.input, " not inserted successfully.")
-		}
-
-	}
-}
+//func TestInsertCandidatePhrase(t *testing.T) {
+//	// Connect to MongoDB with default URL string
+//	db, err := connectToMongo("mongodb://localhost:27017")
+//	if err != nil {
+//		t.Fatal(err)
+//	}
+//
+//	// Get the phrases collection from the cool_songs database
+//	phrasesCollection := NewInReviewConnection(db)
+//
+//	// Example UserRow
+//	testUser := newTestUser()
+//
+//	// Test cases
+//	var testPhrases = []struct {
+//		input  string
+//		output bool
+//	}{
+//		{"All your base are belong to us.", true},      // Homophones: all, are, base, to, your
+//		{"This has zero homophones within it.", false}, // No homophones
+//	}
+//
+//	// Insert each phrase
+//	for _, phrase := range testPhrases {
+//		// Try to insert the phrase
+//		var successVal bool
+//		err := InsertPhrase(phrase.input, testUser, phrasesCollection)
+//		successVal = (err == nil)
+//
+//		// Check the value
+//		if successVal != phrase.output {
+//			t.Error("Phrase: ", phrase.input, " not inserted successfully.")
+//		}
+//
+//	}
+//}
 
 // Test InsertPhrase directly
 func TestInsertPhrase(t *testing.T) {
@@ -100,34 +100,59 @@ func TestInsertPhrase(t *testing.T) {
 	// Get test user
 	testUser := newTestUser()
 
+	// Empty rating
+	var emptyRating Rating
+
 	// Phrase example
-	tests := Phrase{
+	testPhrase := Phrase{
+		PhraseID:        primitive.NewObjectID(),
+		SubmitterUserID: testUser.ID,
+		SubmissionDate:  time.Now(),
+		Ratings:         emptyRating,
+		WordList:        []int{588, 817},
+		PhraseText:      "The base of the project.",
+	}
+
+	// Log PhraseID
+	t.Log(testPhrase.PhraseID)
+
+	// Insert test phrase
+	err = InsertPhrase(testPhrase, testUser, phrasesCollection)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Try to delete the phrase
+	_, err = phrasesCollection.DeleteOne(context.Background(), bson.M{"_id": testPhrase.PhraseID})
+	if err != nil {
+		t.Error(err)
+	}
 
 }
 
 // Test the GetPhraseList object
-func TestGetPhraseList(t *testing.T) {
-	// Connect to MongoDB with default URL string
-	db, err := connectToMongo("mongodb://localhost:27017")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Get the phrases collection from the cool_songs database
-	phrases := NewPhraseConnection(db)
-
-	// List of words for phrase query
-	//	var wordList = []Word{
-	//		{
-
-	// Query for songs
-	songList, err := ArrayQuery(songs)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Print songlist
-	for _, s := range songList {
-		fmt.Println(s)
-	}
-}
+//func TestGetPhraseList(t *testing.T) {
+//	// Connect to MongoDB with default URL string
+//	db, err := connectToMongo("mongodb://localhost:27017")
+//	if err != nil {
+//		t.Fatal(err)
+//	}
+//
+//	// Get the phrases collection from the cool_songs database
+//	phrases := NewPhraseConnection(db)
+//
+//	// List of words for phrase query
+//	//	var wordList = []Word{
+//	//		{
+//
+//	// Query for songs
+//	songList, err := ArrayQuery(songs)
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//
+//	// Print songlist
+//	for _, s := range songList {
+//		fmt.Println(s)
+//	}
+//}
