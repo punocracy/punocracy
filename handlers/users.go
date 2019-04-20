@@ -70,7 +70,7 @@ func GetLogin(w http.ResponseWriter, r *http.Request) {
 
 	currentUserInterface := session.Values["user"]
 	if currentUserInterface != nil {
-		http.Redirect(w, r, "/", 302)
+		http.Redirect(w, r, "/now", 302)
 		return
 	}
 
@@ -107,7 +107,7 @@ func PostLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/", 302)
+	http.Redirect(w, r, "/now", 302)
 }
 
 // GetLogout deletes the current user from the session and redirects to the main page
@@ -121,7 +121,7 @@ func GetLogout(w http.ResponseWriter, r *http.Request) {
 	delete(session.Values, "user")
 	session.Save(r, w)
 
-	http.Redirect(w, r, "/", 302)
+	http.Redirect(w, r, "/now", 302)
 }
 
 // PostPutDeleteUsersID will redirect to either the PutUsersID or the DeleteUsersID handlers depending on the typpe of request
@@ -178,7 +178,7 @@ func PutUsersID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/", 302)
+	http.Redirect(w, r, "/now", 302)
 }
 
 // DeleteUsersID is not implemented
