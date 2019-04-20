@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/jmoiron/sqlx"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -48,6 +49,8 @@ type User struct {
 func (u *User) userRowFromSQLResult(tx *sqlx.Tx, sqlResult sql.Result) (*UserRow, error) {
 	userID, err := sqlResult.LastInsertId()
 	if err != nil {
+		logrus.Infoln("this happened in userRowFromSQL")
+		logrus.Infoln(err)
 		return nil, err
 	}
 
