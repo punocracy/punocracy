@@ -30,9 +30,11 @@ func GetWords(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	_ = vars["letter"]
+
+	//
 	// TODO: Query DB for words that start with the letter
 
-	pageData := wordPageData{CurrentUser: currentUser, Words: nil} //[]string{"This", "and", "that"}}
+	pageData := wordPageData{CurrentUser: currentUser, Words: nil}
 
 	tmpl, err := template.ParseFiles("templates/dashboard-nosearch.html.tmpl", "templates/word.html.tmpl")
 	if err != nil {
