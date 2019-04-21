@@ -9,12 +9,27 @@ import (
 	"strings"
 )
 
+/*
+    This type is to be derived from for each table in our database
+*/
 type Base struct {
 	db    *sqlx.DB
 	table string
 	hasID bool
 }
 
+//not correct, base is just a begining. 
+/*
+func CreateBase ( iDb *sqlx.DB, iTable string, iHasID bool){
+    b := &Base{ db = iDb, table = iTable, hadID = iHasID}
+    return b
+}
+*/
+
+/*
+*   This function is used to check if a transaction has been commited, and a new one needs to be assigned
+    This transaction system is designed such that, if no transaction is specified each function called is atomic, otherwise if the developer specifies a transaction, the functions can be run in the same transaction
+*/
 func (b *Base) newTransactionIfNeeded(tx *sqlx.Tx) (*sqlx.Tx, bool, error) {
 	var err error
 	wrapInSingleTransaction := false
@@ -22,7 +37,7 @@ func (b *Base) newTransactionIfNeeded(tx *sqlx.Tx) (*sqlx.Tx, bool, error) {
 	if tx != nil {
 		return tx, wrapInSingleTransaction, nil
 	}
-
+        //new transaction started
 	tx, err = b.db.Beginx()
 	if err == nil {
 		wrapInSingleTransaction = true
@@ -35,6 +50,9 @@ func (b *Base) newTransactionIfNeeded(tx *sqlx.Tx) (*sqlx.Tx, bool, error) {
 	return tx, wrapInSingleTransaction, nil
 }
 
+/*
+   Inserts one row into a table 
+*/
 func (b *Base) InsertIntoTable(tx *sqlx.Tx, data map[string]interface{}) (sql.Result, error) {
 	if b.table == "" {
 		return nil, errors.New("Table must not be empty.")
@@ -51,7 +69,9 @@ func (b *Base) InsertIntoTable(tx *sqlx.Tx, data map[string]interface{}) (sql.Re
 	keys := make([]string, 0)
 	qMarks := make([]string, 0)
 	values := make([]interface{}, 0)
-
+        
+        //grows the list of key value pairs extracted from data and stored as seperate lists
+        //keys represent the columns and qmarks are the bindvars which are replaced by values when tx.Exec is called
 	for key, value := range data {
 		keys = append(keys, key)
 		qMarks = append(qMarks, "?")
@@ -82,7 +102,8 @@ func (b *Base) UpdateFromTable(tx *sqlx.Tx, data map[string]interface{}, where s
 	if b.table == "" {
 		return nil, errors.New("Table must not be empty.")
 	}
-
+        //creates a new transaction if one has not been specified
+        //returns nil on error
 	tx, wrapInSingleTransaction, err := b.newTransactionIfNeeded(tx)
 	if tx == nil {
 		return nil, errors.New("Transaction struct must not be empty.")
