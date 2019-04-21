@@ -9,7 +9,7 @@ import (
 
 func newWordForTest(t *testing.T) *Word{
     //edit the Connect string with own username and password
-    db, err := sqlx.Connect("mysql","root:@/proj_testing")
+    db, err := sqlx.Connect("mysql","root:*password*@/punocracy")
     if err != nil {
         t.Errorf(" database didnt connect. Error: %v", err)
     }
@@ -71,6 +71,18 @@ func TestEmptyIDList(t *testing.T){
     _, err := w.GetWordIDList(nil, wordSliceTest)
 
     if(err == nil){
-        t.Error("An error was supposed to happen")
+        t.Errorf("An error was supposed to happen")
+    }
+}
+
+func TestRandWordsList(t *testing.T){
+    w := newWordForTest(t)
+    words, err := w.RandWordsList(nil, 3)
+    if err != nil{
+        t.Errorf("an error occured getting random words %v",err)
+    }
+
+    for _,v := range words{
+        fmt.Printf("ids: %v \n", v)
     }
 }
