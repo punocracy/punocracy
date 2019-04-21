@@ -241,10 +241,6 @@ func GetPhraseListForCurators(maxPhrases int64, phrasesCollection *mongo.Collect
 	return phraseList, nil
 }
 
-// TODO list:
-//  - Get phrases for curators, take in max number of phrases
-//  - Get phrases for display from the homophone list, ranked by rating, take in max number of phrases
-
 // Query for phrases from a list of words
 func GetPhraseList(wordlist []Word, phrasesCollection *mongo.Collection) ([]Phrase, error) {
 	// Build the query document
