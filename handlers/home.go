@@ -8,6 +8,7 @@ import (
 	"github.com/alvarosness/punocracy/libhttp"
 	"github.com/alvarosness/punocracy/models"
 	"github.com/gorilla/sessions"
+	"github.com/jmoiron/sqlx"
 )
 
 type homePageData struct {
@@ -41,8 +42,12 @@ func GetHome(w http.ResponseWriter, r *http.Request) {
 	currentUser, _ := session.Values["user"].(*models.UserRow)
 
 	// TODO: Query DB for random words and top rated phrases
+	db := r.Context().Value("db").(*sqlx.DB)
+	wordTable := models.NewWord(db)
 
-	pageData := homePageData{CurrentUser: currentUser, IsCurator: false, Words: nil, Phrases: nil}
+	words, _ := wordTable.RandWordsList(nil, 5)
+
+	pageData := homePageData{CurrentUser: currentUser, IsCurator: false, Words: words, Phrases: nil}
 
 	tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/search.html.tmpl", "templates/home.html.tmpl")
 	if err != nil {
