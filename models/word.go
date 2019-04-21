@@ -9,19 +9,21 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-// Word is the core of our project
-
-// Specifies the structure of words stored in the Words entity
+// Specifies the structure of words stored in the Word table/entity
 type WordRow struct {
 	WordID         int    `db:"wordID"`
 	Word           string `db:"word"`
 	HomophoneGroup int    `db:"homophoneGroup"`
 }
 
+//Represents the word table/entity stored in a
 type Word struct {
 	Base
 }
 
+//Allocates and initializes a new Word
+//input: a pointer to a database that has a table Words_T
+//output: a *Word that represents that word table
 func NewWord(db *sqlx.DB) *Word {
 	word := &Word{}
 	word.db = db
@@ -115,5 +117,15 @@ func (w *Word) GetWordIDList(tx *sqlx.Tx, wordSlice []string) ([]int, error) {
 }
 
 /*
-rand list of words in words table
+returns a random list of words in words table
+input: an integer representing amount of words requested
+output: list of words
 */
+func (w *Word) RandWordsList(tx *sqlx.Tx, amount int) ([]string , error){
+    var wordList []string
+    err := w.db.Select(&wordList,"SELECT word FROM Words_T ORDER BY RAND() LIMIT ?", amount)
+    if err != nil{
+       return nil, err
+    }
+    return wordList, nil
+}
