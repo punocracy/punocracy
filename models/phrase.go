@@ -188,9 +188,9 @@ func RejectPhrase(phrase Phrase, reviewer UserRow, phrasesCollection *mongo.Coll
 }
 
 // Retrieve phrases in review for curators up to a specified number
-//func GetPhrasesForCurators(maxPhrases int, phrasesCollection *mongo.Collection) ([]Phrase, error) {
-//
-//}
+func GetPhrasesForCurators(maxPhrases int, phrasesCollection *mongo.Collection) ([]Phrase, error) {
+
+}
 
 // TODO list:
 //  - Get phrases for curators, take in max number of phrases
