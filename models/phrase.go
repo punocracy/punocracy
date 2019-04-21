@@ -5,6 +5,7 @@ package models
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/jmoiron/sqlx"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -39,6 +40,18 @@ type Rating struct {
 	FiveStar  int `bson:"five"`
 }
 
+// Pretty printing string method
+func (r Rating) String() string {
+	formatString := `{
+	one: %v,
+	two: %v,
+	three: %v,
+	four: %v,
+	five: %v
+}`
+	return fmt.Sprintf(formatString, r.OneStar, r.TwoStar, r.ThreeStar, r.FourStar, r.FiveStar)
+}
+
 // Phrase data structure format in MongoDB according to diagram
 type Phrase struct {
 	PhraseID        primitive.ObjectID `bson:"_id"`
@@ -53,22 +66,26 @@ type Phrase struct {
 }
 
 // Pretty printing like a JSON document for Phrase
-//func (p Phrase) String() string {
-//	var s string
-//	formatString := `{
-//	_id: ObjectId("%v"),
-//	submitterUserID: "%v",
-//	submissionDate: %v,
-//	ratings: %v,
-//	wordList: %v,
-//	reviewedBy: %v,
-//	reviewDate: %v,
-//	phraseText: "%v",
-//	displayValue: %v
-//}`
-//	fmt.Sprintf(s, formatString, p.PhraseID, p.SubmitterUserID, p.SubmissionDate, p.PhraseRatings, p.WordList, p.ReviewedBy, p.ReviewDate, p.PhraseText, p.DisplayPublic)
-//	return s
-//}
+func (p Phrase) String() string {
+	formatString := `{
+	_id: ObjectId("%v"),
+	submitterUserID: "%v",
+	submissionDate: %v,
+	ratings: {
+		one: %v,
+		two: %v,
+		three: %v,
+		four: %v,
+		five: %v
+	},
+	wordList: %v,
+	reviewedBy: %v,
+	reviewDate: %v,
+	phraseText: "%v",
+	displayValue: %v
+}`
+	return fmt.Sprintf(formatString, p.PhraseID, p.SubmitterUserID, p.SubmissionDate, p.PhraseRatings.OneStar, p.PhraseRatings.TwoStar, p.PhraseRatings.ThreeStar, p.PhraseRatings.FourStar, p.PhraseRatings.FiveStar, p.WordList, p.ReviewedBy, p.ReviewDate, p.PhraseText, p.DisplayPublic)
+}
 
 // Type for sorting phrases.
 type phraseSorter struct {

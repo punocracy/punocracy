@@ -89,7 +89,7 @@ func TestGetPhraseList(t *testing.T) {
 
 	// Print all phrases
 	for _, p := range phraseList {
-		t.Log(p)
+		t.Log(p.String())
 	}
 }
 
