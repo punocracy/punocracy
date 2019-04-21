@@ -34,7 +34,7 @@
   {{range .Words}}
   <form action="/now" method="POST">
     <input type="hidden" value="{{.}}">
-    <input type="submit" class="list-group-item">{{.}}</a>
+    <button type="submit" class="list-group-item">{{.}}</button>
   </form>
   {{end}}
 </div>
