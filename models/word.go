@@ -116,7 +116,9 @@ func (w *Word) GetWordIDList(tx *sqlx.Tx, wordSlice []string) ([]int , error){
 }
 
 /*
-rand list of words in words table
+returns a random list of words in words table
+input: an integer representing amount of words requested
+output: list of words
 */
 func (w *Word) RandWordsList(tx *sqlx.Tx, amount int) ([]string , error){
     var wordList []string
