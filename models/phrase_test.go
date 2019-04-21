@@ -63,6 +63,36 @@ func connectToMongo(urlString string) (*mongo.Database, error) {
 	return client.Database("punocracy"), nil
 }
 
+// Test GetPhraseList
+func TestGetPhraseList(t *testing.T) {
+	// Connect to MongoDB with default URL string
+	mongoDB, err := connectToMongo("mongodb://localhost:27017")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Get the phrases collection from the cool_songs database
+	phrasesCollection := NewPhraseConnection(mongoDB)
+
+	// List of words to search for
+	wordList := []Word{
+		{1414, "two", 625},
+		{189, "to", 625},
+		//{831, "too", 625},
+	}
+
+	// Get a list of phrases
+	phraseList, err := GetPhraseList(wordList, phrasesCollection)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Print all phrases
+	for _, p := range phraseList {
+		t.Log(p)
+	}
+}
+
 // Test GetPhraseListForCurators
 func TestGetPhrasesForCurators(t *testing.T) {
 	// Connect to MongoDB with default URL string

@@ -52,6 +52,24 @@ type Phrase struct {
 	DisplayPublic   DisplayValue       `bson:"displayValue"`
 }
 
+// Pretty printing like a JSON document for Phrase
+//func (p Phrase) String() string {
+//	var s string
+//	formatString := `{
+//	_id: ObjectId("%v"),
+//	submitterUserID: "%v",
+//	submissionDate: %v,
+//	ratings: %v,
+//	wordList: %v,
+//	reviewedBy: %v,
+//	reviewDate: %v,
+//	phraseText: "%v",
+//	displayValue: %v
+//}`
+//	fmt.Sprintf(s, formatString, p.PhraseID, p.SubmitterUserID, p.SubmissionDate, p.PhraseRatings, p.WordList, p.ReviewedBy, p.ReviewDate, p.PhraseText, p.DisplayPublic)
+//	return s
+//}
+
 // Type for sorting phrases.
 type phraseSorter struct {
 	phrase    Phrase
@@ -191,7 +209,6 @@ func RejectPhrase(phrase Phrase, reviewer UserRow, phrasesCollection *mongo.Coll
 // Retrieve phrases in review for curators up to a specified number
 func GetPhraseListForCurators(maxPhrases int64, phrasesCollection *mongo.Collection) ([]Phrase, error) {
 	// Build the query document
-	// TODO: add limit as a query option
 	queryDocument := bson.M{"displayValue": Unreviewed}
 	queryOptions := &options.FindOptions{Limit: &maxPhrases}
 
@@ -248,8 +265,15 @@ func GetPhraseListForCurators(maxPhrases int64, phrasesCollection *mongo.Collect
 // TODO: write this
 // Query for phrases from a list of words
 func GetPhraseList(wordList []Word, phrasesCollection *mongo.Collection) ([]Phrase, error) {
+	// Get list of word IDS from wordList
+	var wordIDs []int
+	for _, w := range wordList {
+		wordIDs = append(wordIDs, w.WordID)
+	}
+
 	// Build the query document
-	queryDocument := bson.M{"wordList": bson.M{"$in": wordList}}
+	queryDocument := bson.M{"wordList": bson.M{"$in": wordIDs}, "displayValue": Accepted}
+	//queryDocument := bson.M{"wordList": bson.M{"$in": wordIDs}}
 
 	// Get a cursor pointing to the list of phrases as a result of the query
 	cur, err := phrasesCollection.Find(context.Background(), queryDocument)
@@ -280,7 +304,7 @@ func GetPhraseList(wordList []Word, phrasesCollection *mongo.Collection) ([]Phra
 	}
 
 	// Sort phraseList by rating
-	sortPhrases(phraseList)
+	//sortPhrases(phraseList)
 
 	// return the result
 	return phraseList, nil
