@@ -20,7 +20,8 @@ type homePageData struct {
 type resultPageData struct {
 	CurrentUser *models.UserRow
 	IsCurator   bool
-	FoundWord   bool
+	NoPhrases   bool
+	NoWords     bool
 	Puns        []string
 }
 
@@ -37,11 +38,6 @@ func GetHome(w http.ResponseWriter, r *http.Request) {
 
 	session, _ := sessionStore.Get(r, "punocracy-session")
 	currentUser, _ := session.Values["user"].(*models.UserRow)
-	logrus.Infoln(currentUser)
-	// if !ok {
-	// 	// http.Redirect(w, r, "/logout", 302)
-	// 	return
-	// }
 
 	// TODO: Query DB for random words and top rated phrases
 
@@ -65,16 +61,15 @@ func PostHome(w http.ResponseWriter, r *http.Request) {
 
 	session, _ := sessionStore.Get(r, "punocracy-session")
 	currentUser, ok := session.Values["user"].(*models.UserRow)
+
 	if !ok {
-		http.Redirect(w, r, "/logout", 302)
-		return
+		currentUser = nil
 	}
 
-	// word := r.FormValue("queryWord")
 	// TODO: Query DB for words in the same word group
 	// TODO: Query DB for phrases and perform word replacement
 
-	pageData := resultPageData{CurrentUser: currentUser, FoundWord: false, Puns: nil}
+	pageData := resultPageData{CurrentUser: currentUser, IsCurator: false, NoPhrases: true, NoWords: false, Puns: nil}
 
 	tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/search.html.tmpl", "templates/query.html.tmpl")
 	if err != nil {

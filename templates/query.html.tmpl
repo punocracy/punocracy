@@ -1,16 +1,19 @@
 {{define "content"}}
+<div class="row">
+
+</div>
 {{if .NoWords}}
-<div class="alert alert-info" role="alert">
+<div class="alert alert-info" role="alert" style="margin-top: 20px">
     <h4 class="alert-heading">No Words Found for Punny Stuff</h4>
     <p>Sadly, your extensive vocabulary is too much for us to handle.</p>
     <p>Please refer to <a href="/words/a" class="alert-link">this list</a> of words available in our system.</p>
 </div>
 {{else}}
 {{if .NoPhrases}}
-<div class="alert alert-info" role="alert">
-    <h4 class="alert-heading">No Phrases Matches for Punny Stuff</h4>
+<div class="alert alert-info" role="alert" style="margin-top: 20px">
+    <h4 class="alert-heading">No Phrase Matches for Punny Stuff</h4>
     <p>Sadly we don't have enough phrases for your amusement.</p>
-    <p>Why not submit your own phrases <a href="#">here</a>?</p>
+    <p>Why not submit your own phrases <a href="/submit">here</a>?</p>
 </div>
 {{else}}
 <div class="row">
