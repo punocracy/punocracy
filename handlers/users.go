@@ -40,6 +40,7 @@ func PostSignup(w http.ResponseWriter, r *http.Request) {
 
 	_, err := models.NewUser(db).Signup(nil, username, email, password, passwordAgain)
 	if err != nil {
+		// TODO: Redirect to Login maybe with an error message
 		logrus.Infoln(err)
 		libhttp.HandleErrorJson(w, err)
 		return
