@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"sort"
 	"strings"
 	"time"
@@ -188,8 +189,56 @@ func RejectPhrase(phrase Phrase, reviewer UserRow, phrasesCollection *mongo.Coll
 }
 
 // Retrieve phrases in review for curators up to a specified number
-func GetPhrasesForCurators(maxPhrases int, phrasesCollection *mongo.Collection) ([]Phrase, error) {
+func GetPhraseListForCurators(maxPhrases int64, phrasesCollection *mongo.Collection) ([]Phrase, error) {
+	// Build the query document
+	// TODO: add limit as a query option
+	queryDocument := bson.M{"displayValue": Unreviewed}
+	queryOptions := &options.FindOptions{Limit: &maxPhrases}
 
+	// Get a cursor pointing to the list of phrases as a result of the query
+	cur, err := phrasesCollection.Find(context.Background(), queryDocument, queryOptions)
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(context.Background())
+
+	// List of phrases and ObjectIDs for update
+	var phraseList []Phrase
+	var phraseObjectIDs []primitive.ObjectID
+
+	// Get query result and print
+	//for i := 0; i < maxPhrases && cur.Next(context.Background()); i++ {
+	for cur.Next(context.Background()) {
+		// Decode into struct
+		var onePhrase Phrase
+		err = cur.Decode(&onePhrase)
+		if err != nil {
+			return nil, err
+		}
+
+		// Append result to phraseList and append ObjectID
+		phraseList = append(phraseList, onePhrase)
+		phraseObjectIDs = append(phraseObjectIDs, onePhrase.PhraseID)
+	}
+
+	// Check for cursor errors
+	if err := cur.Err(); err != nil {
+		return nil, err
+	}
+
+	// Set all phrases to be in review
+	filter := bson.M{"_id": bson.M{"$in": phraseObjectIDs}}
+	update := bson.M{"$set": bson.M{"displayValue": InReview}}
+	_, err = phrasesCollection.UpdateMany(context.Background(), filter, update)
+	if err != nil {
+		return nil, err
+	}
+
+	// Sort the phrases
+	sortPhrases(phraseList)
+
+	// Return the result
+	return phraseList, nil
 }
 
 // TODO list:

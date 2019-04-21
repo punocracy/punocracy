@@ -65,7 +65,68 @@ func connectToMongo(urlString string) (*mongo.Database, error) {
 
 // Test GetPhraseListForCurators
 func TestGetPhrasesForCurators(t *testing.T) {
+	// Connect to MongoDB with default URL string
+	mongoDB, err := connectToMongo("mongodb://localhost:27017")
+	if err != nil {
+		t.Fatal(err)
+	}
 
+	// Get the phrases collection from the cool_songs database
+	phrasesCollection := NewPhraseConnection(mongoDB)
+
+	// Connect to MySQL database
+	sqlDB, err := newDBConnection()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Example UserRow
+	testUser := newTestUser()
+
+	// Test cases
+	var testPhrases = []string{
+		"All your base are belong to us.",
+		"To live is to dream.",
+		"Live free or die hard.",
+		"This has no homophones in it.",
+	}
+	maxPhrases := 3
+
+	// Insert each phrase
+	for _, phrase := range testPhrases {
+		// Try to insert the phrase
+		err := InsertPhrase(phrase, testUser, sqlDB, phrasesCollection)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	// Get phrases for curator list
+	phrases, err := GetPhraseListForCurators(int64(maxPhrases), phrasesCollection)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Check length
+	if len(phrases) != maxPhrases {
+		t.Error("Got too many phrases! Expected", maxPhrases, "got", len(phrases))
+	}
+
+	// Check the fields for all and print the phrases
+	for _, p := range phrases {
+		if p.DisplayPublic != InReview {
+			t.Error("Display value is not InReview! Actual display value:", p.DisplayPublic)
+		}
+		t.Log("PhraseText:", p.PhraseText)
+	}
+
+	// Try to delete the phrases
+	for _, phrase := range testPhrases {
+		_, err = phrasesCollection.DeleteOne(context.Background(), bson.M{"phraseText": phrase})
+		if err != nil {
+			t.Error(err)
+		}
+	}
 }
 
 // Test average rating function
