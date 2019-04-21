@@ -6,11 +6,26 @@ import (
 	"context"
 	"errors"
 	"github.com/jmoiron/sqlx"
-	//"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"strings"
 	"time"
+)
+
+// Display value type
+type DisplayValue int
+
+// Display value constants
+const (
+	// Unreviewed by a curator; do not display
+	Unreviewed DisplayValue = iota
+	// Curator is in the process of reviewing
+	InReview
+	// Accepted phrase to be displayed
+	Accepted
+	// Phrase was rejected -- do not discard, but don't save, either
+	Rejected
 )
 
 // Rating maps the number of ratings of each star type. Allows computation of average rating
@@ -29,9 +44,10 @@ type Phrase struct {
 	SubmissionDate  time.Time          `bson:"submissionDate"`
 	Ratings         Rating             `bson:"ratings"`
 	WordList        []int              `bson:"wordList"`
-	ApprovedBy      int64              `bson:"approvedBy"`
-	ApprovalDate    time.Time          `bson:"approvalDate"`
+	ReviewedBy      int64              `bson:"reviewedBy"`
+	ReviewDate      time.Time          `bson:"reviewDate"`
 	PhraseText      string             `bson:"phraseText"`
+	DisplayPublic   DisplayValue       `bson:"displayValue"`
 }
 
 // Create a new instance of the phrase collection
@@ -39,11 +55,7 @@ func NewPhraseConnection(db *mongo.Database) *mongo.Collection {
 	return db.Collection("phrases")
 }
 
-// Create a new instance of the phrase collection
-func NewInReviewConnection(db *mongo.Database) *mongo.Collection {
-	return db.Collection("inReview")
-}
-
+// Get wordID list from SQL database. Unsafe!
 func fakeGetWordIDList(words []string, db *sqlx.DB) ([]int, error) {
 	// Build query string
 	queryString := "SELECT wordID FROM Words_T WHERE word IN ("
@@ -64,7 +76,7 @@ func fakeGetWordIDList(words []string, db *sqlx.DB) ([]int, error) {
 }
 
 // Insert a candidate phrase submitted by a user
-func InsertCandidatePhrase(phraseText string, creator UserRow, sqlDB *sqlx.DB, inReviewCollection *mongo.Collection) error {
+func InsertPhrase(phraseText string, creator UserRow, sqlDB *sqlx.DB, phrasesCollection *mongo.Collection) error {
 	// Split into lowercase words by space character
 	allWords := strings.Split(strings.ToLower(phraseText), " ")
 
@@ -100,13 +112,14 @@ func InsertCandidatePhrase(phraseText string, creator UserRow, sqlDB *sqlx.DB, i
 		SubmissionDate:  time.Now(),
 		Ratings:         Rating{},
 		WordList:        wordIDs,
-		ApprovedBy:      0,
-		ApprovalDate:    nil,
+		ReviewedBy:      0,
+		ReviewDate:      time.Now(),
 		PhraseText:      phraseText,
+		DisplayPublic:   Unreviewed,
 	}
 
 	// Insert into collection
-	_, err = inReviewCollection.InsertOne(context.Background(), candPhrase)
+	_, err = phrasesCollection.InsertOne(context.Background(), candPhrase)
 	if err != nil {
 		return err
 	}
@@ -115,20 +128,41 @@ func InsertCandidatePhrase(phraseText string, creator UserRow, sqlDB *sqlx.DB, i
 	return nil
 }
 
-// Insert a phrase into the phrases from candidate phrase
-func InsertPhrase(phrase Phrase, approver UserRow, phrasesCollection *mongo.Collection) error {
-	// Set approver
-	phrase.ApprovedBy = approver.ID
-	phrase.ApprovalDate = time.Now()
+// Accept a reviewed phrase
+func AcceptPhrase(phrase Phrase, reviewer UserRow, phrasesCollection *mongo.Collection) error {
+	// Build update document filter (by _id)
+	filter := bson.M{"_id": phrase.PhraseID}
 
-	// Insert into phrases collection and propagate error
-	_, err := phrasesCollection.InsertOne(context.Background(), phrase)
+	// Update document
+	updateDocument := bson.M{"$set": bson.M{"reviewedBy": reviewer.ID, "reviewDate": time.Now(), "displayValue": Accepted}}
+
+	// Update the phrase in Mongo to set it to be accepted
+	_, err := phrasesCollection.UpdateOne(context.Background(), filter, updateDocument)
 	if err != nil {
 		return err
 	}
 
 	return nil
 }
+
+// Set the specified phrase as rejected after review
+func RejectPhrase(phrase Phrase, reviewer UserRow, phrasesCollection *mongo.Collection) error {
+	// Build update document filter (by _id)
+	filter := bson.M{"_id": phrase.PhraseID}
+
+	// Update document
+	updateDocument := bson.M{"$set": bson.M{"reviewedBy": reviewer.ID, "reviewDate": time.Now(), "displayValue": Rejected}}
+
+	// Update the phrase in Mongo to set it to be accepted
+	_, err := phrasesCollection.UpdateOne(context.Background(), filter, updateDocument)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Retrieve up to a specified number
 
 // TODO list:
 //  - Get phrases for curators, take in max number of phrases

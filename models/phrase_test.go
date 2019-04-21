@@ -82,7 +82,7 @@ func TestFakeGetWordIDList(t *testing.T) {
 }
 
 // Test phrase insertion function
-func TestInsertCandidatePhrase(t *testing.T) {
+func TestInsertPhrase(t *testing.T) {
 	// Connect to MongoDB with default URL string
 	mongoDB, err := connectToMongo("mongodb://localhost:27017")
 	if err != nil {
@@ -90,9 +90,9 @@ func TestInsertCandidatePhrase(t *testing.T) {
 	}
 
 	// Get the phrases collection from the cool_songs database
-	inReviewPhrasesCollection := NewInReviewConnection(mongoDB)
+	phrasesCollection := NewPhraseConnection(mongoDB)
 
-	// Connect to database
+	// Connect to MySQL database
 	sqlDB, err := newDBConnection()
 	if err != nil {
 		t.Fatal(err)
@@ -114,7 +114,7 @@ func TestInsertCandidatePhrase(t *testing.T) {
 	for _, phrase := range testPhrases {
 		// Try to insert the phrase
 		var successVal bool
-		err := InsertCandidatePhrase(phrase.input, testUser, sqlDB, inReviewPhrasesCollection)
+		err := InsertPhrase(phrase.input, testUser, sqlDB, phrasesCollection)
 		successVal = (err == nil)
 
 		// Check the value
@@ -126,7 +126,7 @@ func TestInsertCandidatePhrase(t *testing.T) {
 
 	// Try to delete the phrases
 	for _, phrase := range testPhrases {
-		_, err = inReviewPhrasesCollection.DeleteOne(context.Background(), bson.M{"phraseText": phrase.input})
+		_, err = phrasesCollection.DeleteOne(context.Background(), bson.M{"phraseText": phrase.input})
 		if err != nil {
 			t.Error(err)
 		}
@@ -134,7 +134,7 @@ func TestInsertCandidatePhrase(t *testing.T) {
 }
 
 // Test InsertPhrase directly
-func TestInsertPhrase(t *testing.T) {
+func TestAcceptRejectPhrase(t *testing.T) {
 	// Connect to MongoDB with default URL string
 	mongoDB, err := connectToMongo("mongodb://localhost:27017")
 	if err != nil {
@@ -147,58 +147,88 @@ func TestInsertPhrase(t *testing.T) {
 	// Get test user
 	testUser := newTestUser()
 
-	// Empty rating
-	var emptyRating Rating
-
-	// Phrase example
+	// Create the phrase
 	testPhrase := Phrase{
 		PhraseID:        primitive.NewObjectID(),
 		SubmitterUserID: testUser.ID,
 		SubmissionDate:  time.Now(),
-		Ratings:         emptyRating,
-		WordList:        []int{588, 817},
-		PhraseText:      "The base of the project.",
+		Ratings:         Rating{},
+		WordList:        []int{1454, 518, 588, 189, 71},
+		ReviewedBy:      0,
+		ReviewDate:      time.Now(),
+		PhraseText:      "All your base are belong to us.",
+		DisplayPublic:   Unreviewed,
 	}
 
-	// Log PhraseID
-	t.Log(testPhrase.PhraseID)
-
-	// Insert test phrase
-	err = InsertPhrase(testPhrase, testUser, phrasesCollection)
+	// Insert into collection
+	_, err = phrasesCollection.InsertOne(context.Background(), testPhrase)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
+	}
+
+	// Test accept
+	err = AcceptPhrase(testPhrase, testUser, phrasesCollection)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Find the phrase by ID and see if it's accepted
+	var queryPhrase Phrase
+	err = phrasesCollection.FindOne(context.Background(), bson.M{"_id": testPhrase.PhraseID}).Decode(&queryPhrase)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if queryPhrase.DisplayPublic != Accepted {
+		t.Error("Phrase was not accepted! PhraseID: ", queryPhrase.PhraseID)
+	}
+
+	// Set phrase as rejected
+	err = RejectPhrase(testPhrase, testUser, phrasesCollection)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Check that out
+	err = phrasesCollection.FindOne(context.Background(), bson.M{"_id": testPhrase.PhraseID}).Decode(&queryPhrase)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if queryPhrase.DisplayPublic != Rejected {
+		t.Error("Phrase was not rejected! PhraseID: ", queryPhrase.PhraseID)
 	}
 
 	// Try to delete the phrase
 	_, err = phrasesCollection.DeleteOne(context.Background(), bson.M{"_id": testPhrase.PhraseID})
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 }
 
 // Test the GetPhraseList object
-func TestGetPhraseList(t *testing.T) {
-	// Connect to MongoDB with default URL string
-	mongoDB, err := connectToMongo("mongodb://localhost:27017")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Get the phrases collection from the cool_songs database
-	phrases := NewPhraseConnection(mongoDB)
-
-	// List of words for phrase query
-	var wordList = []Word{
-		{189, "two", 625},
-		{831, "too", 625},
-		//{1414, "two", 625},
-	}
-
-	// Query for phrase list
-	phraseList, err := GetPhraseList(wordList)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-}
+//func TestGetPhraseList(t *testing.T) {
+//	// Connect to MongoDB with default URL string
+//	mongoDB, err := connectToMongo("mongodb://localhost:27017")
+//	if err != nil {
+//		t.Fatal(err)
+//	}
+//
+//	// Get the phrases collection from the cool_songs database
+//	phrases := NewPhraseConnection(mongoDB)
+//
+//	// List of words for phrase query
+//	var wordList = []Word{
+//		{189, "two", 625},
+//		{831, "too", 625},
+//		//{1414, "two", 625},
+//	}
+//
+//	// Query for phrase list
+//	phraseList, err := GetPhraseList(wordList)
+//	if err != nil {
+//		t.Fatal(err)
+//	}
+//
+//}
