@@ -63,6 +63,31 @@ func connectToMongo(urlString string) (*mongo.Database, error) {
 	return client.Database("punocracy"), nil
 }
 
+// Test GetPhraseListForCurators
+func TestGetPhrasesForCurators(t *testing.T) {
+
+}
+
+// Test average rating function
+func TestAverageRating(t *testing.T) {
+	// List of ratings
+	tests := []struct {
+		input    Rating
+		expected float32
+	}{
+		{Rating{0, 0, 0, 4, 0}, float32(4)},
+		{Rating{0, 0, 0, 2, 2}, 4.5},
+		{Rating{1, 2, 5, 2, 1}, 3},
+	}
+
+	// Test
+	for _, test := range tests {
+		if output := AverageRating(test.input); output != test.expected {
+			t.Error("Test failed: {} inputted, {} expected, {} received", test.input, test.expected, output)
+		}
+	}
+}
+
 // Test fake query for word IDs
 func TestFakeGetWordIDList(t *testing.T) {
 	// Connect to database
@@ -154,7 +179,7 @@ func TestAcceptRejectPhrase(t *testing.T) {
 		PhraseID:        primitive.NewObjectID(),
 		SubmitterUserID: testUser.ID,
 		SubmissionDate:  time.Now(),
-		Ratings:         Rating{},
+		PhraseRatings:   Rating{},
 		WordList:        []int{1454, 518, 588, 189, 71},
 		ReviewedBy:      0,
 		ReviewDate:      time.Now(),
