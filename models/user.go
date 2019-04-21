@@ -1,4 +1,5 @@
 package models
+
 //talk to alvaro when its time to work on this
 //he made some changes
 import (
@@ -36,11 +37,11 @@ const (
 )
 
 type UserRow struct {
-	ID        int64           `db:"userID"`
-	Username  string          `db:"username"`
-	Email     string          `db:"email"`
-	Password  string          `db:"password"`
-	PermLevel PermissionLevel `db:"permLevel"`
+	ID           int64           `db:"userID"`
+	Username     string          `db:"username"`
+	Email        string          `db:"email"`
+	PasswordHash string          `db:"passwordHash"`
+	PermLevel    PermissionLevel `db:"permLevel"`
 }
 
 type User struct {
@@ -101,7 +102,7 @@ func (u *User) GetUserByUsernameAndPassword(tx *sqlx.Tx, username, password stri
 		return nil, err
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
 	if err != nil {
 		return nil, err
 	}
