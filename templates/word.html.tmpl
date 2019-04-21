@@ -30,14 +30,12 @@
   </ul>
 </nav>
 {{if .Words}}
-<div class="list-group">
-  {{range .Words}}
-  <form action="/now" method="POST">
-    <input type="hidden" value="{{.}}">
-    <button type="submit" class="list-group-item">{{.}}</button>
-  </form>
-  {{end}}
-</div>
+{{range .Words}}
+<form action="/now" method="POST">
+  <input type="hidden" value="{{.}}">
+  <button type="submit" class="btn btn-block btn-light">{{.}}</button>
+</form>
+{{end}}
 {{else}}
 <h1>No Words</h1>
 {{end}}
