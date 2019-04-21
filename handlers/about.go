@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"net/http"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/alvarosness/punocracy/libhttp"
 	"github.com/alvarosness/punocracy/models"
 	"github.com/gorilla/sessions"
@@ -11,6 +12,7 @@ import (
 
 type aboutPageData struct {
 	CurrentUser *models.UserRow
+	IsCurator   bool
 }
 
 // GetAbout generates the about page
@@ -22,12 +24,9 @@ func GetAbout(w http.ResponseWriter, r *http.Request) {
 	session, _ := sessionStore.Get(r, "punocracy-session")
 	currentUser, _ := session.Values["user"].(*models.UserRow)
 
-	// if !ok {
-	// 	http.Redirect(w, r, "/logout", 302)
-	// 	return
-	// }
+	pageData := aboutPageData{CurrentUser: currentUser, IsCurator: false}
 
-	pageData := aboutPageData{CurrentUser: currentUser}
+	logrus.Infoln(pageData)
 
 	tmpl, err := template.ParseFiles("templates/dashboard-nosearch.html.tmpl", "templates/about.html.tmpl")
 	if err != nil {
