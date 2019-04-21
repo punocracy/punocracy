@@ -34,7 +34,7 @@ func SetSessionStore(sessionStore sessions.Store) func(http.Handler) http.Handle
 func Logging() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-			logrus.Infoln(req.URL.Path)
+			logrus.Infoln(req.Method, req.URL.Path)
 
 			next.ServeHTTP(res, req)
 		})

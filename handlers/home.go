@@ -19,6 +19,7 @@ type homePageData struct {
 
 type resultPageData struct {
 	CurrentUser *models.UserRow
+	QueryWord   string
 	IsCurator   bool
 	NoPhrases   bool
 	NoWords     bool
@@ -66,10 +67,12 @@ func PostHome(w http.ResponseWriter, r *http.Request) {
 		currentUser = nil
 	}
 
+	queryWord := r.FormValue("queryWord")
+
 	// TODO: Query DB for words in the same word group
 	// TODO: Query DB for phrases and perform word replacement
 
-	pageData := resultPageData{CurrentUser: currentUser, IsCurator: false, NoPhrases: true, NoWords: false, Puns: nil}
+	pageData := resultPageData{CurrentUser: currentUser, QueryWord: queryWord, IsCurator: false, NoPhrases: true, NoWords: false, Puns: nil}
 
 	tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/search.html.tmpl", "templates/query.html.tmpl")
 	if err != nil {
