@@ -20,11 +20,12 @@ func GetAbout(w http.ResponseWriter, r *http.Request) {
 	sessionStore := r.Context().Value("sessionStore").(sessions.Store)
 
 	session, _ := sessionStore.Get(r, "punocracy-session")
-	currentUser, ok := session.Values["user"].(*models.UserRow)
-	if !ok {
-		http.Redirect(w, r, "/logout", 302)
-		return
-	}
+	currentUser, _ := session.Values["user"].(*models.UserRow)
+
+	// if !ok {
+	// 	http.Redirect(w, r, "/logout", 302)
+	// 	return
+	// }
 
 	pageData := aboutPageData{CurrentUser: currentUser}
 

@@ -15,12 +15,14 @@ type curatorPageData struct {
 	Phrases     []string
 }
 
-// I was testing the "github.com/go-playground/form" library. This helped with parsing array/struct/map like input from html forms
+// TestData I was testing the "github.com/go-playground/form" library. This helped with parsing array/struct/map like input from html forms
 type TestData struct {
 	Status map[string]string
 }
 
-// GetCurator handles requests for the curator. I need to better document these functions
+// GetCurator handles the loading of the curator page.
+// It first checks if the user is a curator. If not it should redirect the user to the main page.
+// A query to the phrases DB is made and it returns the phrases that are in review.
 func GetCurator(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 

@@ -12,14 +12,21 @@ import (
 
 type homePageData struct {
 	CurrentUser *models.UserRow
+	IsCurator   bool
 	Words       []string
 	Phrases     []string
 }
 
 type resultPageData struct {
 	CurrentUser *models.UserRow
+	IsCurator   bool
 	FoundWord   bool
 	Puns        []string
+}
+
+// HandleRoot redirects to now
+func HandleRoot(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/now", 302)
 }
 
 // GetHome generates the home page of the system
@@ -38,7 +45,7 @@ func GetHome(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: Query DB for random words and top rated phrases
 
-	pageData := homePageData{CurrentUser: currentUser, Words: nil, Phrases: nil}
+	pageData := homePageData{CurrentUser: currentUser, IsCurator: false, Words: nil, Phrases: nil}
 
 	tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/search.html.tmpl", "templates/home.html.tmpl")
 	if err != nil {

@@ -1,13 +1,14 @@
-package main
+package scritps
 
 import (
 	"database/sql"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
 	"log"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
-func main() {
+func mysqlTest() {
 	fmt.Println("Hello, world!")
 	// Connect to database
 	db, err := sql.Open("mysql", "nathaniel:nathaniel@/NatTest")

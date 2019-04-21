@@ -4,9 +4,11 @@ package middlewares
 import (
 	"net/http"
 
+	"context"
+
+	"github.com/Sirupsen/logrus"
 	"github.com/gorilla/sessions"
 	"github.com/jmoiron/sqlx"
-	"context"
 )
 
 func SetDB(db *sqlx.DB) func(http.Handler) http.Handler {
@@ -29,10 +31,20 @@ func SetSessionStore(sessionStore sessions.Store) func(http.Handler) http.Handle
 	}
 }
 
+func Logging() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+			logrus.Infoln(req.URL.Path)
+
+			next.ServeHTTP(res, req)
+		})
+	}
+}
+
 // MustLogin is a middleware that checks existence of current user.
 func MustLogin(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		sessionStore := req.Context().Value( "sessionStore").(sessions.Store)
+		sessionStore := req.Context().Value("sessionStore").(sessions.Store)
 		session, _ := sessionStore.Get(req, "punocracy-session")
 		userRowInterface := session.Values["user"]
 

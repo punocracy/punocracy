@@ -1,13 +1,14 @@
-package main
+package scripts
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
-	"log"
 )
 
-func main() {
+func mgoTest() {
 	fmt.Println("Hello, world!")
 
 	// Connect to localhost, and get reference to collection

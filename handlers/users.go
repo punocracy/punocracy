@@ -6,12 +6,14 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/alvarosness/punocracy/libhttp"
 	"github.com/alvarosness/punocracy/models"
 	"github.com/gorilla/sessions"
 	"github.com/jmoiron/sqlx"
 )
 
+// GetSignup generates the user signup page
 func GetSignup(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
@@ -24,25 +26,29 @@ func GetSignup(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, nil)
 }
 
+// PostSignup reads the new user's credentials and stores them in the user DB if they are valid
+// After signing up, the user is autmatically logged in.
 func PostSignup(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
 	db := r.Context().Value("db").(*sqlx.DB)
 
+	username := r.FormValue("Username")
 	email := r.FormValue("Email")
 	password := r.FormValue("Password")
 	passwordAgain := r.FormValue("PasswordAgain")
 
-	_, err := models.NewUser(db).Signup(nil, email, password, passwordAgain)
+	_, err := models.NewUser(db).Signup(nil, username, email, password, passwordAgain)
 	if err != nil {
+		logrus.Infoln(err)
 		libhttp.HandleErrorJson(w, err)
 		return
 	}
 
-	// Perform login
 	PostLogin(w, r)
 }
 
+// GetLoginWithoutSession generates the login page without checking if an existing user has already logged in
 func GetLoginWithoutSession(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
@@ -55,7 +61,9 @@ func GetLoginWithoutSession(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, nil)
 }
 
-// GetLogin get login page.
+// GetLogin first checks if a user is already logged in.
+// If the user is already logged in, the user is redirected to the home page.
+// If not GetLoginWithoutSession is called
 func GetLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
@@ -65,29 +73,30 @@ func GetLogin(w http.ResponseWriter, r *http.Request) {
 
 	currentUserInterface := session.Values["user"]
 	if currentUserInterface != nil {
-		http.Redirect(w, r, "/", 302)
+		http.Redirect(w, r, "/now", 302)
 		return
 	}
 
 	GetLoginWithoutSession(w, r)
 }
 
-// PostLogin performs login.
+// PostLogin handles user authentication.
+// If the user has an account in the system, he/she is redirected to the home page
+// If the user used the wrong credentials, redirect them to the login page with an error message.
 func PostLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
 	db := r.Context().Value("db").(*sqlx.DB)
 	sessionStore := r.Context().Value("sessionStore").(sessions.Store)
 
-	email := r.FormValue("Email")
+	username := r.FormValue("Username")
 	password := r.FormValue("Password")
 
 	u := models.NewUser(db)
 
-	user, err := u.GetUserByEmailAndPassword(nil, email, password)
+	user, err := u.GetUserByUsernameAndPassword(nil, username, password)
 	if err != nil {
-		libhttp.HandleErrorJson(w, err)
-		return
+		http.Redirect(w, r, "login/", http.StatusBadRequest)
 	}
 
 	session, _ := sessionStore.Get(r, "punocracy-session")
@@ -99,9 +108,10 @@ func PostLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/", 302)
+	http.Redirect(w, r, "/now", 302)
 }
 
+// GetLogout deletes the current user from the session and redirects to the main page
 func GetLogout(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
@@ -112,9 +122,10 @@ func GetLogout(w http.ResponseWriter, r *http.Request) {
 	delete(session.Values, "user")
 	session.Save(r, w)
 
-	http.Redirect(w, r, "/", 302)
+	http.Redirect(w, r, "/now", 302)
 }
 
+// PostPutDeleteUsersID will redirect to either the PutUsersID or the DeleteUsersID handlers depending on the typpe of request
 func PostPutDeleteUsersID(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
@@ -126,8 +137,9 @@ func PostPutDeleteUsersID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// PutUsersID updates the user data
 func PutUsersID(w http.ResponseWriter, r *http.Request) {
-	userId, err := getIdFromPath(w, r)
+	userID, err := getIDFromPath(w, r)
 	if err != nil {
 		libhttp.HandleErrorJson(w, err)
 		return
@@ -141,8 +153,8 @@ func PutUsersID(w http.ResponseWriter, r *http.Request) {
 
 	currentUser := session.Values["user"].(*models.UserRow)
 
-	if currentUser.ID != userId {
-		err := errors.New("Modifying other user is not allowed.")
+	if currentUser.ID != userID {
+		err := errors.New("modifying other user is not allowed")
 		libhttp.HandleErrorJson(w, err)
 		return
 	}
@@ -153,7 +165,7 @@ func PutUsersID(w http.ResponseWriter, r *http.Request) {
 
 	u := models.NewUser(db)
 
-	currentUser, err = u.UpdateEmailAndPasswordById(nil, currentUser.ID, email, password, passwordAgain)
+	currentUser, err = u.UpdateEmailAndPasswordByID(nil, currentUser.ID, email, password, passwordAgain)
 	if err != nil {
 		libhttp.HandleErrorJson(w, err)
 		return
@@ -167,11 +179,12 @@ func PutUsersID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/", 302)
+	http.Redirect(w, r, "/now", 302)
 }
 
+// DeleteUsersID is not implemented
 func DeleteUsersID(w http.ResponseWriter, r *http.Request) {
-	err := errors.New("DELETE method is not implemented.")
+	err := errors.New("delete method is not implemented")
 	libhttp.HandleErrorJson(w, err)
 	return
 }

@@ -12,6 +12,7 @@ import (
 
 type wordPageData struct {
 	CurrentUser *models.UserRow
+	IsCurator   bool
 	Words       []string
 }
 
@@ -22,17 +23,19 @@ func GetWords(w http.ResponseWriter, r *http.Request) {
 	sessionStore := r.Context().Value("sessionStore").(sessions.Store)
 
 	session, _ := sessionStore.Get(r, "punocracy-session")
-	currentUser, ok := session.Values["user"].(*models.UserRow)
-	if !ok {
-		http.Redirect(w, r, "/logout", 302)
-		return
-	}
+	currentUser, _ := session.Values["user"].(*models.UserRow)
+	// if !ok {
+	// 	http.Redirect(w, r, "/logout", 302)
+	// 	return
+	// }
 
 	vars := mux.Vars(r)
 	_ = vars["letter"]
+
+	//
 	// TODO: Query DB for words that start with the letter
 
-	pageData := wordPageData{CurrentUser: currentUser, Words: nil} //[]string{"This", "and", "that"}}
+	pageData := wordPageData{CurrentUser: currentUser, IsCurator: false, Words: nil}
 
 	tmpl, err := template.ParseFiles("templates/dashboard-nosearch.html.tmpl", "templates/word.html.tmpl")
 	if err != nil {

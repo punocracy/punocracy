@@ -46,6 +46,7 @@ func (app *Application) MiddlewareStruct() (*interpose.Middleware, error) {
 	middle := interpose.New()
 	middle.Use(middlewares.SetDB(app.db))
 	middle.Use(middlewares.SetSessionStore(app.sessionStore))
+	middle.Use(middlewares.Logging())
 
 	middle.UseHandler(app.mux())
 
@@ -57,8 +58,10 @@ func (app *Application) mux() *gorilla_mux.Router {
 
 	router := gorilla_mux.NewRouter()
 
-	router.Handle("/", http.HandlerFunc(handlers.GetHome)).Methods("GET")
-	router.Handle("/", http.HandlerFunc(handlers.PostHome)).Methods("POST")
+	router.Handle("/now", http.HandlerFunc(handlers.GetHome)).Methods("GET")
+	router.Handle("/now", http.HandlerFunc(handlers.PostHome)).Methods("POST")
+
+	router.HandleFunc("/", handlers.HandleRoot).Methods("GET", "POST", "PUT", "DELETE")
 
 	router.HandleFunc("/submit", handlers.GetSubmit).Methods("GET")
 	router.HandleFunc("/submit", handlers.PostSubmit).Methods("POST")
@@ -81,7 +84,7 @@ func (app *Application) mux() *gorilla_mux.Router {
 
 	router.HandleFunc("/logout", handlers.GetLogout).Methods("GET")
 
-	router.Handle("/users/{id:[0-9]+}", MustLogin(http.HandlerFunc(handlers.PostPutDeleteUsersID))).Methods("POST", "PUT", "DELETE")
+	router.Handle("/users/{userID:[0-9]+}", MustLogin(http.HandlerFunc(handlers.PostPutDeleteUsersID))).Methods("POST", "PUT", "DELETE")
 
 	// Path of static files must be last!
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("static")))
