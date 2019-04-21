@@ -9,7 +9,7 @@ import (
 
 func newWordForTest(t *testing.T) *Word{
     //edit the Connect string with own username and password
-    db, err := sqlx.Connect("mysql","root:*password_here*@/proj_testing")
+    db, err := sqlx.Connect("mysql","root:@/proj_testing")
     if err != nil {
         t.Errorf(" database didnt connect. Error: %v", err)
     }
