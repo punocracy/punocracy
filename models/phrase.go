@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"sort"
 	"strings"
 	"time"
 )
@@ -42,7 +43,7 @@ type Phrase struct {
 	PhraseID        primitive.ObjectID `bson:"_id"`
 	SubmitterUserID int64              `bson:"submitterUserID"`
 	SubmissionDate  time.Time          `bson:"submissionDate"`
-	Ratings         Rating             `bson:"ratings"`
+	PhraseRatings   Rating             `bson:"ratings"`
 	WordList        []int              `bson:"wordList"`
 	ReviewedBy      int64              `bson:"reviewedBy"`
 	ReviewDate      time.Time          `bson:"reviewDate"`
@@ -50,10 +51,28 @@ type Phrase struct {
 	DisplayPublic   DisplayValue       `bson:"displayValue"`
 }
 
-// Type for sorting phrases
+// Type for sorting phrases.
 type phraseSorter struct {
 	phrase    Phrase
 	avgRating float32
+}
+
+// Type for sorting a list of phrases. Implements sort.Interface
+type phraseSorterList []phraseSorter
+
+// Length of the data
+func (p phraseSorterList) Len() int {
+	return len(p)
+}
+
+// Less than
+func (p phraseSorterList) Less(i, j int) bool {
+	return p[i].avgRating < p[j].avgRating
+}
+
+// Swap
+func (p phraseSorterList) Swap(i, j int) {
+	p[i], p[j] = p[j], p[i]
 }
 
 // Create a new instance of the phrase collection
@@ -116,7 +135,7 @@ func InsertPhrase(phraseText string, creator UserRow, sqlDB *sqlx.DB, phrasesCol
 		PhraseID:        primitive.NewObjectID(),
 		SubmitterUserID: creator.ID,
 		SubmissionDate:  time.Now(),
-		Ratings:         Rating{},
+		PhraseRatings:   Rating{},
 		WordList:        wordIDs,
 		ReviewedBy:      0,
 		ReviewDate:      time.Now(),
@@ -169,9 +188,9 @@ func RejectPhrase(phrase Phrase, reviewer UserRow, phrasesCollection *mongo.Coll
 }
 
 // Retrieve phrases in review for curators up to a specified number
-func GetPhrasesForCurators(maxPhrases int, phrasesCollection *mongo.Collection) ([]Phrase, error) {
-	//
-}
+//func GetPhrasesForCurators(maxPhrases int, phrasesCollection *mongo.Collection) ([]Phrase, error) {
+//
+//}
 
 // TODO list:
 //  - Get phrases for curators, take in max number of phrases
@@ -187,17 +206,17 @@ func GetPhraseList(wordlist []Word, phrasesCollection *mongo.Collection) ([]Phra
 	if err != nil {
 		return nil, err
 	}
-	defer cur.Close(context.background())
+	defer cur.Close(context.Background())
 
 	// list of phrases
 	var phraseList []Phrase
 
 	// get query result and print
-	for cur.Next(context.background()) {
-		// decode into struct
+	for cur.Next(context.Background()) {
+		// Decode into struct
 		var onePhrase Phrase
 		//var onePhrase bson.d
-		err = cur.decode(&onePhrase)
+		err = cur.Decode(&onePhrase)
 		if err != nil {
 			return nil, err
 		}
@@ -206,7 +225,7 @@ func GetPhraseList(wordlist []Word, phrasesCollection *mongo.Collection) ([]Phra
 	}
 
 	// check for cursor errors
-	if err := cur.err(); err != nil {
+	if err := cur.Err(); err != nil {
 		return nil, err
 	}
 
@@ -215,13 +234,25 @@ func GetPhraseList(wordlist []Word, phrasesCollection *mongo.Collection) ([]Phra
 }
 
 // Sort phrases by average rating
-func sortPhrases(phraseList []Phrase) []Phrase {
+func sortPhrases(phraseList []Phrase) {
+	// Put list of phrases into phraseSorter array
+	var phrs []phraseSorter
+	for _, p := range phraseList {
+		phrs = append(phrs, phraseSorter{phrase: p, avgRating: AverageRating(p.PhraseRatings)})
+	}
 
+	// Sort the list
+	sort.Sort(phraseSorterList(phrs))
+
+	// Copy back into phraseList
+	for i := range phrs {
+		phraseList[i] = phrs[i].phrase
+	}
 }
 
 // Get average rating from rating struct
 func AverageRating(r Rating) float32 {
 	totalRatings := r.OneStar + r.TwoStar + r.ThreeStar + r.FourStar + r.FiveStar
 	weightedRatings := 1*r.OneStar + 2*r.TwoStar + 3*r.ThreeStar + 4*r.FourStar + 5*r.FiveStar
-	return float32(weightedRatings) / float32(5*totalRatings)
+	return 5.0 * float32(weightedRatings) / float32(5*totalRatings)
 }
