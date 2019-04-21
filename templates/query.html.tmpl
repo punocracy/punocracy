@@ -1,0 +1,52 @@
+{{define "content"}}
+{{if .NoWords}}
+<div class="alert alert-info" role="alert">
+    <h4 class="alert-heading">No Words Found for Punny Stuff</h4>
+    <p>Sadly, your extensive vocabulary is too much for us to handle.</p>
+    <p>Please refer to <a href="/words/a" class="alert-link">this list</a> of words available in our system.</p>
+</div>
+{{else}}
+{{if .NoPhrases}}
+<div class="alert alert-info" role="alert">
+    <h4 class="alert-heading">No Phrases Matches for Punny Stuff</h4>
+    <p>Sadly we don't have enough phrases for your amusement.</p>
+    <p>Why not submit your own phrases <a href="#">here</a>?</p>
+</div>
+{{else}}
+<div class="row">
+    <div class="col-sm-6">
+        <h2>Puns</h2>
+        <div class="list-group list-group-flush">
+            {{range .Puns}}
+            <div class="list-group-item">
+                <h5>{{.}}</h5>
+            </div>
+            {{end}}
+        </div>
+    </div>
+
+    <div class="col-sm-6">
+        <h2>OG Phrases</h2>
+        <div class="list-group list-group-flush">
+            {{range .Phrases}}
+            <div class="list-group-item">
+                <h5 class="mb-1">{{.}}</h5>
+                <div>
+                    <img src="star.svg" alt="">
+                    <img src="star.svg" alt="">
+                    <img src="star.svg" alt="">
+                    <img src="star.svg" alt="">
+                    <img src="star.svg" alt="">
+                </div>
+                <div class="d-flex justify-content-between">
+                    <p class="mb-1"><a href="#">Anon</a></p>
+                    <small>30 days ago</small>
+                </div>
+            </div>
+            {{end}}
+        </div>
+    </div>
+</div>
+{{end}}
+{{end}}
+{{end}}

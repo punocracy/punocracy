@@ -29,7 +29,6 @@
         <li class="nav-item">
           <a class="nav-link" href="/about">About Us</a>
         </li>
-        {{if .CurrentUser}}
         <li class="nav-item dropdown">
           <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button"
             aria-expanded="false">{{ .CurrentUser.Email }}</a>
@@ -49,19 +48,10 @@
             <li><a href="/logout">Logout</a></li>
           </ul>
         </li>
-        {{else}}
-        <li class="nav-item">
-          <a class="nav-link" href="/login">Log In</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/signup">Sign Up</a>
-        </li>
-        {{end}}
       </ul>
     </div><!-- /.navbar-collapse -->
   </nav>
 
-  {{if .CurrentUser}}
   <!-- User Settings Modal -->
   <div class="modal fade" id="user-settings-modal" tabindex="-1" role="dialog" aria-labelledby="user-settings-label"
     aria-hidden="true">
@@ -105,10 +95,8 @@
       </div>
     </div>
   </div>
-  {{end}}
-  
+
   <div class="container text-center">
-    {{template "searchbar"}}
     {{template "content" .}}
   </div>
 

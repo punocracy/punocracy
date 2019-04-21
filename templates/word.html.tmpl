@@ -1,0 +1,41 @@
+{{define "content"}}
+<nav aria-label="Page navigation example">
+  <ul class="pagination pagination-lg">
+    <li class="page-item"><a class="page-link" href="/words/a">A</a></li>
+    <li class="page-item"><a class="page-link" href="/words/b">B</a></li>
+    <li class="page-item"><a class="page-link" href="/words/c">C</a></li>
+    <li class="page-item"><a class="page-link" href="/words/d">D</a></li>
+    <li class="page-item"><a class="page-link" href="/words/e">E</a></li>
+    <li class="page-item"><a class="page-link" href="/words/f">F</a></li>
+    <li class="page-item"><a class="page-link" href="/words/g">G</a></li>
+    <li class="page-item"><a class="page-link" href="/words/h">H</a></li>
+    <li class="page-item"><a class="page-link" href="/words/i">I</a></li>
+    <li class="page-item"><a class="page-link" href="/words/j">J</a></li>
+    <li class="page-item"><a class="page-link" href="/words/k">K</a></li>
+    <li class="page-item"><a class="page-link" href="/words/l">L</a></li>
+    <li class="page-item"><a class="page-link" href="/words/m">M</a></li>
+    <li class="page-item"><a class="page-link" href="/words/n">N</a></li>
+    <li class="page-item"><a class="page-link" href="/words/o">O</a></li>
+    <li class="page-item"><a class="page-link" href="/words/p">P</a></li>
+    <li class="page-item"><a class="page-link" href="/words/q">Q</a></li>
+    <li class="page-item"><a class="page-link" href="/words/r">R</a></li>
+    <li class="page-item"><a class="page-link" href="/words/s">S</a></li>
+    <li class="page-item"><a class="page-link" href="/words/t">T</a></li>
+    <li class="page-item"><a class="page-link" href="/words/u">U</a></li>
+    <li class="page-item"><a class="page-link" href="/words/v">V</a></li>
+    <li class="page-item"><a class="page-link" href="/words/w">W</a></li>
+    <li class="page-item"><a class="page-link" href="/words/x">X</a></li>
+    <li class="page-item"><a class="page-link" href="/words/y">Y</a></li>
+    <li class="page-item"><a class="page-link" href="/words/z">Z</a></li>
+  </ul>
+</nav>
+{{if .Words}}
+<ul>
+  {{range .Words}}
+  <li>{{.}}</li>
+  {{end}}
+</ul>
+{{else}}
+<h1>No Words</h1>
+{{end}}
+{{end}}
