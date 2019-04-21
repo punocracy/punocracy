@@ -241,11 +241,15 @@ func GetPhraseListForCurators(maxPhrases int64, phrasesCollection *mongo.Collect
 	return phraseList, nil
 }
 
+// TODO: add delete all by userID function
+// TODO: add function to anonymize by userID
+// TODO: add function to get phrases by userID
+
 // TODO: write this
 // Query for phrases from a list of words
-func GetPhraseList(wordlist []Word, phrasesCollection *mongo.Collection) ([]Phrase, error) {
+func GetPhraseList(wordList []Word, phrasesCollection *mongo.Collection) ([]Phrase, error) {
 	// Build the query document
-	var queryDocument bson.D
+	queryDocument := bson.M{"wordList": bson.M{"$in": wordList}}
 
 	// Get a cursor pointing to the list of phrases as a result of the query
 	cur, err := phrasesCollection.Find(context.Background(), queryDocument)
@@ -274,6 +278,9 @@ func GetPhraseList(wordlist []Word, phrasesCollection *mongo.Collection) ([]Phra
 	if err := cur.Err(); err != nil {
 		return nil, err
 	}
+
+	// Sort phraseList by rating
+	sortPhrases(phraseList)
 
 	// return the result
 	return phraseList, nil
