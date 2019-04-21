@@ -11,6 +11,7 @@ import (
 
 type historyPageData struct {
 	CurrentUser      *models.UserRow
+	IsCurator        bool
 	RatedPhrases     []string
 	SubmittedPhrases []string
 }
@@ -23,12 +24,17 @@ func GetHistory(w http.ResponseWriter, r *http.Request) {
 
 	session, _ := sessionStore.Get(r, "punocracy-session")
 	currentUser, ok := session.Values["user"].(*models.UserRow)
+
+	var isCurator bool
+
 	if !ok {
-		http.Redirect(w, r, "/logout", 302)
-		return
+		currentUser = nil
+		isCurator = false
+	} else {
+		isCurator = currentUser.PermLevel == models.Curator
 	}
 
-	pageData := historyPageData{currentUser, nil, nil}
+	pageData := historyPageData{CurrentUser: currentUser, IsCurator: isCurator, RatedPhrases: nil, SubmittedPhrases: nil}
 
 	tmpl, err := template.ParseFiles("templates/dashboard-nosearch.html.tmpl", "templates/history.html.tmpl")
 	if err != nil {
