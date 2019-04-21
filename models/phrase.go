@@ -50,6 +50,12 @@ type Phrase struct {
 	DisplayPublic   DisplayValue       `bson:"displayValue"`
 }
 
+// Type for sorting phrases
+type phraseSorter struct {
+	phrase    Phrase
+	avgRating float32
+}
+
 // Create a new instance of the phrase collection
 func NewPhraseConnection(db *mongo.Database) *mongo.Collection {
 	return db.Collection("phrases")
@@ -218,5 +224,4 @@ func AverageRating(r Rating) float32 {
 	totalRatings := r.OneStar + r.TwoStar + r.ThreeStar + r.FourStar + r.FiveStar
 	weightedRatings := 1*r.OneStar + 2*r.TwoStar + 3*r.ThreeStar + 4*r.FourStar + 5*r.FiveStar
 	return float32(weightedRatings) / float32(5*totalRatings)
-
 }
