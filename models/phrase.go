@@ -241,6 +241,7 @@ func GetPhraseListForCurators(maxPhrases int64, phrasesCollection *mongo.Collect
 	return phraseList, nil
 }
 
+// TODO: write this
 // Query for phrases from a list of words
 func GetPhraseList(wordlist []Word, phrasesCollection *mongo.Collection) ([]Phrase, error) {
 	// Build the query document
