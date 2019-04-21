@@ -26,11 +26,14 @@ func GetWords(w http.ResponseWriter, r *http.Request) {
 	session, _ := sessionStore.Get(r, "punocracy-session")
 	currentUser, ok := session.Values["user"].(*models.UserRow)
 
+	var isCurator bool
+
 	if !ok {
 		currentUser = nil
+		isCurator = false
+	} else {
+		isCurator = currentUser.PermLevel == models.Curator
 	}
-
-	isCurator := currentUser.PermLevel == models.Curator
 
 	vars := mux.Vars(r)
 	letter := rune(vars["letter"][0])
