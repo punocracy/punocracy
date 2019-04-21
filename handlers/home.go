@@ -68,6 +68,7 @@ func PostHome(w http.ResponseWriter, r *http.Request) {
 	}
 
 	queryWord := r.FormValue("queryWord")
+	logrus.Infoln(queryWord)
 
 	// TODO: Query DB for words in the same word group
 	// TODO: Query DB for phrases and perform word replacement
