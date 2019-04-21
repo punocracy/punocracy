@@ -114,8 +114,14 @@ func TestGetPhrasesForCurators(t *testing.T) {
 
 	// Check the fields for all and print the phrases
 	for _, p := range phrases {
-		if p.DisplayPublic != InReview {
-			t.Error("Display value is not InReview! Actual display value:", p.DisplayPublic)
+		var result Phrase
+		err = phrasesCollection.FindOne(context.Background(), bson.M{"_id": p.PhraseID}).Decode(&result)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if result.DisplayPublic != InReview {
+			t.Error("Display value is not InReveiw! Expected", InReview, "got value:", result.DisplayPublic)
 		}
 		t.Log("PhraseText:", p.PhraseText)
 	}
