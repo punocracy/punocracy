@@ -30,11 +30,12 @@
   </ul>
 </nav>
 {{if .Words}}
-<ul>
-  {{range .Words}}
-  <li>{{.}}</li>
-  {{end}}
-</ul>
+{{range .Words}}
+<form action="/now" method="POST">
+  <input type="hidden" name="queryWord" value="{{.}}">
+  <button type="submit" class="btn btn-block btn-light"><h3>{{.}}</h3></button>
+</form>
+{{end}}
 {{else}}
 <h1>No Words</h1>
 {{end}}
