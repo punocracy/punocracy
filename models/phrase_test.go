@@ -143,8 +143,9 @@ func TestAverageRating(t *testing.T) {
 		expected float32
 	}{
 		{Rating{0, 0, 0, 4, 0}, float32(4)},
+		{Rating{0, 0, 0, 0, 0}, float32(0)},
 		{Rating{0, 0, 0, 2, 2}, 4.5},
-		{Rating{1, 2, 5, 2, 1}, 3},
+		{Rating{1, 2, 5, 2, 1}, float32(3)},
 	}
 
 	// Test
