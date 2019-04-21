@@ -106,7 +106,9 @@ func TestInsertPhrase(t *testing.T) {
 		input  string
 		output bool
 	}{
-		{"All your base are belong to us.", true},      // Homophones: all, are, base, to, your
+		{"All your base are belong to us.", true}, // Homophones: all, are, base, to, your
+		{"To live is to dream.", true},
+		{"Live free or die hard.", true},
 		{"This has zero homophones within it.", false}, // No homophones
 	}
 
