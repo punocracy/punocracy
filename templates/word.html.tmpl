@@ -32,7 +32,10 @@
 {{if .Words}}
 <div class="list-group">
   {{range .Words}}
-  <a href="/now?queryWord={{.}}" class="list-group-item">{{.}}</a>
+  <form action="/now" method="POST">
+    <input type="hidden" value="{{.}}">
+    <input type="submit" class="list-group-item">{{.}}</a>
+  </form>
   {{end}}
 </div>
 {{else}}
