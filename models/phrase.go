@@ -162,45 +162,61 @@ func RejectPhrase(phrase Phrase, reviewer UserRow, phrasesCollection *mongo.Coll
 	return nil
 }
 
-// Retrieve phrases in review for curators
+// Retrieve phrases in review for curators up to a specified number
+func GetPhrasesForCurators(maxPhrases int, phrasesCollection *mongo.Collection) ([]Phrase, error) {
+	//
+}
 
 // TODO list:
 //  - Get phrases for curators, take in max number of phrases
 //  - Get phrases for display from the homophone list, ranked by rating, take in max number of phrases
 
 // Query for phrases from a list of words
-//func GetPhraseList(wordlist []Word, phrasesCollection *mongo.Collection) ([]Phrase, error) {
-//	// Build the query document
-//	var queryDocument bson.D
-//
-//	// Get a cursor pointing to the list of phrases as a result of the query
-//	cur, err := phrasesCollection.Find(context.Background(), queryDocument)
-//	if err != nil {
-//		return nil, err
-//	}
-//	defer cur.Close(context.background())
-//
-//	// list of phrases
-//	var phraseList []Phrase
-//
-//	// get query result and print
-//	for cur.Next(context.background()) {
-//		// decode into struct
-//		var onePhrase Phrase
-//		//var onePhrase bson.d
-//		err = cur.decode(&onePhrase)
-//		if err != nil {
-//			return nil, err
-//		}
-//		// append to phraseList
-//		phraseList = append(phraseList, onePhrase)
-//	}
-//
-//	// check for cursor errors
-//	if err := cur.err(); err != nil {
-//		return nil, err
-//	}
-//
-//	// return the result
-//	return phraseList, nil
-//}
+func GetPhraseList(wordlist []Word, phrasesCollection *mongo.Collection) ([]Phrase, error) {
+	// Build the query document
+	var queryDocument bson.D
+
+	// Get a cursor pointing to the list of phrases as a result of the query
+	cur, err := phrasesCollection.Find(context.Background(), queryDocument)
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(context.background())
+
+	// list of phrases
+	var phraseList []Phrase
+
+	// get query result and print
+	for cur.Next(context.background()) {
+		// decode into struct
+		var onePhrase Phrase
+		//var onePhrase bson.d
+		err = cur.decode(&onePhrase)
+		if err != nil {
+			return nil, err
+		}
+		// append to phraseList
+		phraseList = append(phraseList, onePhrase)
+	}
+
+	// check for cursor errors
+	if err := cur.err(); err != nil {
+		return nil, err
+	}
+
+	// return the result
+	return phraseList, nil
+}
+
+// Sort phrases by average rating
+func sortPhrases(phraseList []Phrase) []Phrase {
+
+}
+
+// Get average rating from rating struct
+func AverageRating(r Rating) float32 {
+	totalRatings := r.OneStar + r.TwoStar + r.ThreeStar + r.FourStar + r.FiveStar
+	weightedRatings := 1*r.OneStar + 2*r.TwoStar + 3*r.ThreeStar + 4*r.FourStar + 5*r.FiveStar
+	return float32(weightedRatings) / float32(5*totalRatings)
+
+}
