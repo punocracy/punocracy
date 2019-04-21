@@ -30,11 +30,11 @@
   </ul>
 </nav>
 {{if .Words}}
-<ul>
+<div class="list-group">
   {{range .Words}}
-  <li>{{.}}</li>
+  <a href="/now?queryWord={{.}}" class="list-group-item">{{.}}</a>
   {{end}}
-</ul>
+</div>
 {{else}}
 <h1>No Words</h1>
 {{end}}
