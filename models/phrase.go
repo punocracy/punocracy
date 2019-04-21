@@ -162,7 +162,7 @@ func RejectPhrase(phrase Phrase, reviewer UserRow, phrasesCollection *mongo.Coll
 	return nil
 }
 
-// Retrieve up to a specified number
+// Retrieve phrases in review for curators
 
 // TODO list:
 //  - Get phrases for curators, take in max number of phrases
