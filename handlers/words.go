@@ -8,6 +8,7 @@ import (
 	"github.com/alvarosness/punocracy/models"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
+	"github.com/jmoiron/sqlx"
 )
 
 type wordPageData struct {
@@ -23,19 +24,29 @@ func GetWords(w http.ResponseWriter, r *http.Request) {
 	sessionStore := r.Context().Value("sessionStore").(sessions.Store)
 
 	session, _ := sessionStore.Get(r, "punocracy-session")
-	currentUser, _ := session.Values["user"].(*models.UserRow)
-	// if !ok {
-	// 	http.Redirect(w, r, "/logout", 302)
-	// 	return
-	// }
+	currentUser, ok := session.Values["user"].(*models.UserRow)
+
+	if !ok {
+		currentUser = nil
+	}
+
+	isCurator := currentUser.PermLevel == models.Curator
 
 	vars := mux.Vars(r)
-	_ = vars["letter"]
+	letter := rune(vars["letter"][0])
 
-	//
-	// TODO: Query DB for words that start with the letter
+	db := r.Context().Value("db").(*sqlx.DB)
 
-	pageData := wordPageData{CurrentUser: currentUser, IsCurator: false, Words: nil}
+	wordTable := models.NewWord(db)
+	wordsRows, _ := wordTable.QueryAlph(nil, letter)
+
+	words := []string{}
+
+	for _, v := range wordsRows {
+		words = append(words, v.Word)
+	}
+
+	pageData := wordPageData{CurrentUser: currentUser, IsCurator: isCurator, Words: words}
 
 	tmpl, err := template.ParseFiles("templates/dashboard-nosearch.html.tmpl", "templates/word.html.tmpl")
 	if err != nil {
