@@ -1,10 +1,11 @@
 package models
 
 import (
+        "fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
-        "log"
         "errors"
+        "strings"
 )
 // Word is the core of our project
 
@@ -41,7 +42,6 @@ func (w *Word) QueryAlph(tx *sqlx.Tx ,firstLetter rune ) ([]WordRow, error){
     erri := w.db.Select(&words,"SELECT * FROM Words_T WHERE word LIKE ? ORDER BY word;", queryString)
 
     if erri != nil{
-        log.Fatalln(erri)
         return words, erri
     }
     if len(words) == 0{
@@ -63,7 +63,6 @@ func (w *Word) QueryHlistString(tx *sqlx.Tx , inputWord string) ([]WordRow, erro
     erri := w.db.Select(&words,"SELECT * FROM Words_T WHERE homophoneGroup = (SELECT homophoneGroup FROM Words_T WHERE word LIKE ? ) AND word NOT LIKE ? ORDER BY word;", inputWord, inputWord)
 
     if erri != nil{
-        log.Fatalln(erri)
         return words, erri
     }
 
@@ -74,3 +73,45 @@ func (w *Word) QueryHlistString(tx *sqlx.Tx , inputWord string) ([]WordRow, erro
 
     return words, nil
 }
+/*
+given a list of words, return the associated ID
+SELECT wordID FROM Words_T WHERE word IN ('asdf, meme, lul')
+*/
+func (w *Word) GetWordIDList(tx *sqlx.Tx, wordSlice []string) ([]int , error){
+    questionMarks := []string{} 
+    values := make([]interface{},0)
+
+    //for every wordSlice unit
+    for _,v := range wordSlice{
+        questionMarks = append(questionMarks,"?")
+        values = append(values,v)
+    }
+
+    query := fmt.Sprintf("SELECT wordID FROM Words_T WHERE word IN ( %v )", strings.Join(questionMarks,","))
+    
+    rows, err := w.db.Queryx(query,values...)
+
+    if err != nil{
+        return nil,err
+    }
+    
+    idList := []int{}
+    for rows.Next() {
+        var idVal int
+        err = rows.Scan(&idVal) 
+        if err != nil{
+            return nil,err
+        }
+        idList = append(idList,idVal)
+    }
+ 
+    if len(idList) == 0{
+        return nil, errors.New("list is empty.")
+    }
+
+    return idList, nil
+}
+
+/*
+rand list of words in words table
+*/

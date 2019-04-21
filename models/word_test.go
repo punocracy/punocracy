@@ -50,3 +50,27 @@ func TestNILQueryHlistString(t *testing.T) {
         fmt.Printf("%#v\n", v)
     }
 }
+
+/*
+test the wordId list generator
+*/
+func TestNormalIDList(t *testing.T){
+    w := newWordForTest(t)
+    wordSliceTest := []string{"brono","Arono"}
+    intSlice, err := w.GetWordIDList(nil, wordSliceTest)
+    
+    if(err != nil){
+        t.Errorf("Id list failed Error: %v",err)
+    }
+    fmt.Printf("ids: %v , %v \n",intSlice[0],intSlice[1])
+}
+
+func TestEmptyIDList(t *testing.T){
+    w := newWordForTest(t)
+    wordSliceTest := []string{}
+    _, err := w.GetWordIDList(nil, wordSliceTest)
+
+    if(err == nil){
+        t.Error("An error was supposed to happen")
+    }
+}
