@@ -15,7 +15,7 @@ import (
 // Connect to SQL database
 func newDBConnection() (*sqlx.DB, error) {
 	// DSN string
-	defaultDSN := strings.Replace("nathaniel:nathaniel@tcp(localhost:3306)/punocracy?parseTime=true", "-", "_", -1)
+	defaultDSN := strings.Replace("root:138713871387@tcp(localhost:3306)/punocracy?parseTime=true", "-", "_", -1)
 
 	// Connect to DB
 	db, err := sqlx.Connect("mysql", defaultDSN)
@@ -135,7 +135,7 @@ func TestGetPhrasesForCurators(t *testing.T) {
 	}
 
 	// Get phrases for curator list
-	phrases, err := GetPhraseListForCurators(int64(maxPhrases), phrasesCollection)
+	phrases, err := GetPhraseListForCurators(int64(maxPhrases),testUser ,phrasesCollection)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -156,6 +156,10 @@ func TestGetPhrasesForCurators(t *testing.T) {
 		if result.DisplayPublic != InReview {
 			t.Error("Display value is not InReveiw! Expected", InReview, "got value:", result.DisplayPublic)
 		}
+
+                if result.ReviewedBy != testUser.ID{
+                        t.Error("Incorrect assignment to curator! Expected", testUser.ID, "got value:", result.ReviewedBy)
+                }
 		t.Log("PhraseText:", p.PhraseText)
 	}
 

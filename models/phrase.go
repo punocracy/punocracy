@@ -223,12 +223,25 @@ func RejectPhrase(phrase Phrase, reviewer UserRow, phrasesCollection *mongo.Coll
 }
 
 /*
+*/
+
+/*
+TODO:
+
 Keep track of reviewer assigned to phrases
-this helps to deal with condition that where curators leave page before reviewing everything.
-DO THAT
+
+New functionality: first query the phrases that are already inreview by that curator and append them before appending new phrases to the slice
+
+New input: UserRow
+
+Function signature change, previous name:GetPhraseListForCurators
+                           NEW NAME: GetNewPhraseListForCurators
+
+Plan is to change this to a helper function to a new overall GetPhraseListForCurators function.
+that will first query for exsisting curator assigned phrases then append the results of this function.
 */
 // Retrieve phrases in review for curators up to a specified number
-func GetPhraseListForCurators(maxPhrases int64, phrasesCollection *mongo.Collection) ([]Phrase, error) {
+func GetNewPhraseListForCurators(maxPhrases int64, curatingUser UserRow ,phrasesCollection *mongo.Collection) ([]Phrase, error) {
 	// Build the query document
 	queryDocument := bson.M{"displayValue": Unreviewed}
 	queryOptions := &options.FindOptions{Limit: &maxPhrases}
@@ -265,8 +278,9 @@ func GetPhraseListForCurators(maxPhrases int64, phrasesCollection *mongo.Collect
 	}
 
 	// Set all phrases to be in review
+        // and assigned to curator
 	filter := bson.M{"_id": bson.M{"$in": phraseObjectIDs}}
-	update := bson.M{"$set": bson.M{"displayValue": InReview}}
+	update := bson.M{"$set": bson.M{ "reviewedBy": curatingUser.ID, "displayValue": InReview}}
 	_, err = phrasesCollection.UpdateMany(context.Background(), filter, update)
 	if err != nil {
 		return nil, err
