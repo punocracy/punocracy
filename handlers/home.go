@@ -3,7 +3,6 @@ package handlers
 import (
 	"html/template"
 	"net/http"
-	"strings"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/alvarosness/punocracy/libhttp"
@@ -144,7 +143,7 @@ func PostHome(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// TODO: perform word replacement
-	puns := generatePuns(queryWord, words, phrases)
+	puns := models.GeneratePuns(queryWord, words, phrases)
 	pageData := resultPageData{CurrentUser: currentUser, QueryWord: queryWord, IsCurator: isCurator, NoPhrases: noPhrases, NoWords: noWords, Puns: puns, Phrases: phrases}
 
 	tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/search.html.tmpl", "templates/query.html.tmpl")
@@ -154,30 +153,4 @@ func PostHome(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tmpl.Execute(w, pageData)
-}
-
-func generatePuns(word string, homophoneWords []models.WordRow, phrases []models.Phrase) []string {
-	puns := []string{}
-
-	for _, phrase := range phrases {
-		// split text in tokens
-		tokens := strings.Split(phrase.PhraseText, " ")
-		text := []string{}
-
-		for _, token := range tokens {
-			for _, homophoneWord := range homophoneWords {
-				if token == homophoneWord.Word {
-					text = append(text, word)
-				} else {
-					text = append(text, token)
-				}
-			}
-		}
-		puns = append(puns, strings.Join(text, " "))
-		// for _, homophoneWord := range homophoneWords {
-		// 	puns = append(puns, strings.Replace(phrase.PhraseText, homophoneWord.Word, word, -1))
-		// }
-	}
-
-	return puns
 }
