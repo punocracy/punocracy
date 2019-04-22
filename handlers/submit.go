@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"net/http"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/alvarosness/punocracy/libhttp"
 	"github.com/alvarosness/punocracy/models"
 	"github.com/gorilla/sessions"
@@ -75,6 +76,7 @@ func PostSubmit(w http.ResponseWriter, r *http.Request) {
 
 	err := models.InsertPhrase(phrase, *currentUser, word, phrasesCollection)
 	if err != nil {
+		logrus.Errorln(err.Error())
 		// TODO: Handle multiple types of errors
 		http.Redirect(w, r, "/now", http.StatusBadRequest)
 		return
