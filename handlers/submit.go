@@ -31,7 +31,7 @@ func GetSubmit(w http.ResponseWriter, r *http.Request) {
 	var isCurator bool
 
 	if !ok {
-		http.Redirect(w, r, "/now", http.StatusBadRequest)
+		http.Redirect(w, r, "/now", http.StatusFound)
 	} else {
 		isCurator = currentUser.PermLevel <= models.Curator
 	}
@@ -61,7 +61,7 @@ func PostSubmit(w http.ResponseWriter, r *http.Request) {
 	var isCurator bool
 
 	if !ok {
-		http.Redirect(w, r, "/now", http.StatusBadRequest)
+		http.Redirect(w, r, "/now", http.StatusFound)
 	} else {
 		isCurator = currentUser.PermLevel <= models.Curator
 	}
@@ -80,7 +80,7 @@ func PostSubmit(w http.ResponseWriter, r *http.Request) {
 		logrus.Errorln(err.Error())
 		logrus.Infoln("After")
 		// TODO: Handle multiple types of errors
-		http.Redirect(w, r, "/now", http.StatusBadRequest)
+		http.Redirect(w, r, "/now", http.StatusFound)
 		return
 	}
 
