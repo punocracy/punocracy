@@ -160,9 +160,23 @@ func generatePuns(word string, homophoneWords []models.WordRow, phrases []models
 	puns := []string{}
 
 	for _, phrase := range phrases {
-		for _, homophoneWord := range homophoneWords {
-			puns = append(puns, strings.Replace(phrase.PhraseText, homophoneWord.Word, word, -1))
+		// split text in tokens
+		tokens := strings.Split(phrase.PhraseText, " ")
+		text := []string{}
+
+		for _, token := range tokens {
+			for _, homophoneWord := range homophoneWords {
+				if token == homophoneWord.Word {
+					text = append(text, word)
+				} else {
+					text = append(text, token)
+				}
+			}
 		}
+		puns = append(puns, strings.Join(text, " "))
+		// for _, homophoneWord := range homophoneWords {
+		// 	puns = append(puns, strings.Replace(phrase.PhraseText, homophoneWord.Word, word, -1))
+		// }
 	}
 
 	return puns
