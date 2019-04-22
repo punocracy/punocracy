@@ -11,7 +11,11 @@ import (
 	"time"
 )
 
-// TODO: write AddRating function
+// Adds a rating for a specific user
+func AddRating(user UserRow, ratedPhrase Phrase, ratingHistory *mongo.Collection) error {
+	//
+}
+
 // TODO: write ChangeRating function
 // TODO: write DeleteRating function
 // TODO: write GetRatingsByUserID function (sorted by date)
