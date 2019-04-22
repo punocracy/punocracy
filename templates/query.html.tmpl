@@ -15,7 +15,11 @@
 <div class="alert alert-info" role="alert" style="margin-top: 20px">
     <h4 class="alert-heading">No Phrase Matches for Punny Stuff</h4>
     <p>Sadly we don't have enough phrases for your amusement.</p>
+    {{if .CurrentUser}}
     <p>Why not submit your own phrases <a href="/submit">here</a>?</p>
+    {{else}}
+    <p>Why not <a href="/login">login</a> to submit your own phrases?</p>
+    {{end}}
 </div>
 {{else}}
 <div class="row">

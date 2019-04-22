@@ -39,15 +39,23 @@ func GetHome(w http.ResponseWriter, r *http.Request) {
 	sessionStore := r.Context().Value("sessionStore").(sessions.Store)
 
 	session, _ := sessionStore.Get(r, "punocracy-session")
-	currentUser, _ := session.Values["user"].(*models.UserRow)
+	currentUser, ok := session.Values["user"].(*models.UserRow)
 
-	// TODO: Query DB for random words and top rated phrases
+	var isCurator bool
+
+	if !ok {
+		currentUser = nil
+		isCurator = false
+	} else {
+		isCurator = currentUser.PermLevel == models.Curator
+	}
+
 	db := r.Context().Value("db").(*sqlx.DB)
 	wordTable := models.NewWord(db)
 
 	words, _ := wordTable.RandWordsList(nil, 5)
 
-	pageData := homePageData{CurrentUser: currentUser, IsCurator: false, Words: words, Phrases: nil}
+	pageData := homePageData{CurrentUser: currentUser, IsCurator: isCurator, Words: words, Phrases: nil}
 
 	tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/search.html.tmpl", "templates/home.html.tmpl")
 	if err != nil {
