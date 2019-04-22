@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+var ErrPhraseNotFound = errors.New("models: no phrases with that PhraseID found in phrases collection")
+
 // UserHistory stores the user's rating history
 type UserHistory struct {
 	UserID        int64        `bson:"userID"`
