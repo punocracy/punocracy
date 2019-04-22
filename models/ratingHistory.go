@@ -13,6 +13,8 @@ import (
 )
 
 var ErrPhraseNotFound = errors.New("models: no phrases with that PhraseID found in phrases collection")
+var ErrNegativeRatings = errors.New("models: negative rating value.")
+var ErrInvalidRating = errors.New("models: invalid rating value.")
 
 // UserHistory stores the user's rating history
 type UserHistory struct {
@@ -41,23 +43,76 @@ func NewUserRatingsConnection(db *mongo.Database) *mongo.Collection {
 	return db.Collection("userRatings")
 }
 
-// AddRating adds a rating for a specific user
-func AddRating(user UserRow, rating int, ratedPhrase Phrase, phrasesCollection *mongo.Collection, userRatings *mongo.Collection) error {
+// Check if a phrase exists in the phrases collection
+func checkIfPhraseExists(p phrase, phrasesCollectino *mongo.Collection) (bool, error) {
 	// Check if the phrase exists in the phrases collection
 	var throwawayPhrase Phrase
 	err := phrasesCollection.FindOne(context.Background(), bson.M{"_id": ratedPhrase.PhraseID}).Decode(&throwawayPhrase)
 	if err == mongo.ErrNoDocuments {
-		return ErrPhraseNotFound
+		return false, nil
 	} else if err != nil {
-		return err
+		return false, err
+	}
+	return true, nil
+}
+
+// Removes a rating from a phrase in
+func removeRatingFromPhrase(p Phrase, r int, phrasesCollection *mongo.Collection) error {
+	ratingField := "ratings."
+	// Check which rating it is and set
+	switch r {
+	case 1:
+		if p.PhraseRatings.OneStar-1 < 0 {
+			return ErrNegativeRatings
+		}
+		ratingField += "one"
+	case 2:
+		if p.PhraseRatings.TwoStar-1 < 0 {
+			return ErrNegativeRatings
+		}
+		ratingField += "two"
+	case 3:
+		if p.PhraseRatings.ThreeStar-1 < 0 {
+			return ErrNegativeRatings
+		}
+		ratingField += "three"
+	case 4:
+		if p.PhraseRatings.FourStar-1 < 0 {
+			return ErrNegativeRatings
+		}
+		ratingField += "four"
+	case 5:
+		if p.PhraseRatings.FiveStar-1 < 0 {
+			return ErrNegativeRatings
+		}
+		ratingField += "five"
+	default:
+		return ErrInvalidRating
 	}
 
+	// Update the rating in the database (decrement)
+	phraseFilterDoc := bson.M{"_id": ratedPhrase.PhraseID}
+	phraseUpdateDoc := bson.M{"$inc": bson.M{ratingField: -1}}
+	_, err := phrasesCollection.UpdateOne(context.Background(), phraseFilterDoc, phraseUpdateDoc)
+	return err
+}
+
+// Add a rating to the phrase
+func addRatingToPhrase(p Phrase, rating int, phrasesCollection *mongo.Collection) error {
 	// Update the phrase to include the rating
 	phraseFilterDoc := bson.M{"_id": ratedPhrase.PhraseID}
 	phraseUpdateDoc := bson.M{"$inc": bson.M{"ratings." + ratingToRatingString(rating): 1}}
 	_, err = phrasesCollection.UpdateOne(context.Background(), phraseFilterDoc, phraseUpdateDoc)
+	return err
+}
+
+// AddRating adds a rating for a specific user
+func AddOrChangeRating(user UserRow, rating int, ratedPhrase Phrase, phrasesCollection *mongo.Collection, userRatings *mongo.Collection) error {
+	phraseExists, err := checkIfPhraseExists(ratedPhrase, phrasesCollection)
 	if err != nil {
 		return err
+	} else if !phraseExists {
+		return ErrPhraseNotFound
 	}
 
 	// Build UserRating document
@@ -67,18 +122,38 @@ func AddRating(user UserRow, rating int, ratedPhrase Phrase, phrasesCollection *
 	var userHist UserHistory
 	err = userRatings.FindOne(context.Background(), bson.M{"userID": user.ID}).Decode(&userHist)
 
-	if err == mongo.ErrNoDocuments {
+	// If user has history, check if the rating history
+	if err == nil {
+		// Check if the user has rated this document before
+		newRatingFlag := true
+		var oldRating UserRating
+		for _, r := range userHist.RatingHistory {
+			if r.PhraseID == ratedPhrase.PhraseID {
+				newRatingFlag = false
+				oldRating = r
+				break
+			}
+		}
+
+		// Change ratings in phrases collection to remove the rating
+
+		// Add to set if it's a new rating or update the rating if it's already been rated
+		if newRatingFlag {
+			// Add document to the user's rating history
+			filterDoc := bson.M{"userID": user.ID}
+			updateDoc := bson.M{"$addToSet": bson.M{"ratingHistory": ratingEntry}}
+			_, err = userRatings.UpdateOne(context.Background(), filterDoc, updateDoc)
+			if err != nil {
+				return err
+			}
+		} else {
+			// Change entry in user's rating history
+			// Decrement the rating in the thingy
+		}
+	} else if err == mongo.ErrNoDocuments {
 		userHist.UserID = user.ID
 		userHist.RatingHistory = []UserRating{ratingEntry}
 		_, err := userRatings.InsertOne(context.Background(), userHist)
-		if err != nil {
-			return err
-		}
-	} else if err == nil {
-		// Add document to the user's rating history
-		filterDoc := bson.M{"userID": user.ID}
-		updateDoc := bson.M{"$addToSet": bson.M{"ratingHistory": ratingEntry}}
-		_, err = userRatings.UpdateOne(context.Background(), filterDoc, updateDoc)
 		if err != nil {
 			return err
 		}
@@ -86,7 +161,14 @@ func AddRating(user UserRow, rating int, ratedPhrase Phrase, phrasesCollection *
 		return err
 	}
 
-	// Add the user rating to the array for this user's rating history
+	// Update the phrase to include the rating
+	//phraseFilterDoc := bson.M{"_id": ratedPhrase.PhraseID}
+	//phraseUpdateDoc := bson.M{"$inc": bson.M{"ratings." + ratingToRatingString(rating): 1}}
+	//_, err = phrasesCollection.UpdateOne(context.Background(), phraseFilterDoc, phraseUpdateDoc)
+	//if err != nil {
+	//	return err
+	//}
+
 	return nil
 }
 

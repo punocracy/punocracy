@@ -76,6 +76,15 @@ func TestAddRating(t *testing.T) {
 	}
 
 	// TODO: check if the ratings were updated
+	// TODO: delete stuff
+	_, err = userRatings.DeleteOne(context.Background(), bson.M{"userID": testUser.ID})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = phrasesCollection.DeleteOne(context.Background(), bson.M{"_id": testPhrase.PhraseID})
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// Add second rating
 	//testRating.PhraseID = primitive.NewObjectID()
