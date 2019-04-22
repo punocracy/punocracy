@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"net/http"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/alvarosness/punocracy/libhttp"
 	"github.com/alvarosness/punocracy/models"
 	"github.com/go-playground/form"
@@ -39,6 +40,7 @@ func GetCurator(w http.ResponseWriter, r *http.Request) {
 	}
 
 	isCurator := currentUser.PermLevel <= models.Curator
+	logrus.Infoln(currentUser.PermLevel)
 
 	if !isCurator {
 		http.Redirect(w, r, "/now", 302)
