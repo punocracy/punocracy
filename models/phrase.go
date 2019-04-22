@@ -223,8 +223,55 @@ func RejectPhrase(phrase Phrase, reviewer UserRow, phrasesCollection *mongo.Coll
 }
 
 /*
+TODO:
+When curator deletes their account, a function is needed to anonimize their data and release inreview phrases
 */
 
+/*
+TODO:
+This function will retireve phrases that are in review by a curator up to maxPhrases
+*/
+func GetInReviewPhraseList(maxPhrases int64, curatingUser UserRow ,phrasesCollection *mongo.Collection) ([]Phrase, error) {
+
+	// Build the query document
+        queryDocument := bson.M{"displayValue": InReview,"reviewedBy": curatingUser.ID}
+	queryOptions := &options.FindOptions{Limit: &maxPhrases}
+
+	// Get a cursor pointing to the list of phrases as a result of the query
+	cur, err := phrasesCollection.Find(context.Background(), queryDocument, queryOptions)
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(context.Background())
+
+	// List of phrases
+	var phraseList []Phrase
+
+	// Get query result and print
+	//for i := 0; i < maxPhrases && cur.Next(context.Background()); i++ {}
+	for cur.Next(context.Background()) {
+		// Decode into struct
+		var onePhrase Phrase
+		err = cur.Decode(&onePhrase)
+		if err != nil {
+			return nil, err
+		}
+
+		// Append result to phraseList and append ObjectID
+		phraseList = append(phraseList, onePhrase)
+	}
+
+	// Check for cursor errors
+	if err := cur.Err(); err != nil {
+		return nil, err
+	}
+
+	// Sort the phrases
+	sortPhrases(phraseList)
+
+	// Return the result
+	return phraseList, nil
+}
 /*
 TODO:
 
@@ -267,7 +314,10 @@ func GetNewPhraseListForCurators(maxPhrases int64, curatingUser UserRow ,phrases
 			return nil, err
 		}
 
+                //BEFORE APPENDING: edit these results then update them in the DB
 		// Append result to phraseList and append ObjectID
+                onePhrase.ReviewedBy = curatingUser.ID
+                onePhrase.DisplayPublic = InReview
 		phraseList = append(phraseList, onePhrase)
 		phraseObjectIDs = append(phraseObjectIDs, onePhrase.PhraseID)
 	}
@@ -277,7 +327,7 @@ func GetNewPhraseListForCurators(maxPhrases int64, curatingUser UserRow ,phrases
 		return nil, err
 	}
 
-	// Set all phrases to be in review
+	// Set phrases to be in review
         // and assigned to curator
 	filter := bson.M{"_id": bson.M{"$in": phraseObjectIDs}}
 	update := bson.M{"$set": bson.M{ "reviewedBy": curatingUser.ID, "displayValue": InReview}}

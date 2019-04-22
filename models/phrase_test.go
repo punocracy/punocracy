@@ -95,8 +95,8 @@ func TestGetPhraseList(t *testing.T) {
 	}
 }
 
-// Test GetPhraseListForCurators
-func TestGetPhrasesForCurators(t *testing.T) {
+// Test GetNewPhraseListForCurators
+func TestGetNewPhrasesForCurators(t *testing.T) {
 	// Connect to MongoDB with default URL string
 	mongoDB, err := connectToMongo("mongodb://localhost:27017")
 	if err != nil {
@@ -135,7 +135,7 @@ func TestGetPhrasesForCurators(t *testing.T) {
 	}
 
 	// Get phrases for curator list
-	phrases, err := GetPhraseListForCurators(int64(maxPhrases),testUser ,phrasesCollection)
+	phrases, err := GetNewPhraseListForCurators(int64(maxPhrases),testUser ,phrasesCollection)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -159,6 +159,74 @@ func TestGetPhrasesForCurators(t *testing.T) {
 
                 if result.ReviewedBy != testUser.ID{
                         t.Error("Incorrect assignment to curator! Expected", testUser.ID, "got value:", result.ReviewedBy)
+                }
+		t.Log("PhraseText:", p.PhraseText)
+	}
+
+	// Try to delete the phrases
+	for _, phrase := range testPhrases {
+		_, err = phrasesCollection.DeleteOne(context.Background(), bson.M{"phraseText": phrase})
+		if err != nil {
+			t.Error(err)
+		}
+	}
+}
+
+// Test Getting old phrases already in review for a curator
+//insert new phrases into the mongoDB one assigned to that curator and one not.
+func TestGetInReviewPhrases(t *testing.T) {
+	// Connect to MongoDB with default URL string
+	mongoDB, err := connectToMongo("mongodb://localhost:27017")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Get the phrases collection from the cool_songs database
+	phrasesCollection := NewPhraseConnection(mongoDB)
+
+	// Connect to MySQL database
+	sqlDB, err := newDBConnection()
+	if err != nil {
+		t.Fatal(err)
+	}
+	wordInstance := NewWord(sqlDB)
+
+	// Example UserRow
+	testUser := newTestUser()
+
+	// Test cases
+	var testPhrases = []string{
+		"All your base are belong to us.",
+		"To live is to dream.",
+		"Live free or die hard.",
+		"This has no homophones in it.",
+	}
+	//maxPhrases := 3
+
+	// Insert each phrase
+	for _, phrase := range testPhrases {
+		// Try to insert the phrase
+		err := InsertPhrase(phrase, testUser, wordInstance, phrasesCollection)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	// Get new phrases for curator list which assigns in this case just 1 phrase to be reviewed by the testUser (who is also the submitter)
+	phrases, err := GetNewPhraseListForCurators(int64(1),testUser ,phrasesCollection)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+        inPhrases, err2 := GetInReviewPhraseList(int64(1), testUser, phrasesCollection)
+	if err2 != nil {
+		t.Fatal(err)
+	}
+
+	// Check the fields for all and print the phrases
+	for i, p := range phrases {
+                if p.ReviewedBy != inPhrases[i].ReviewedBy{
+                        t.Error("did not correctly assign and retrieve phrases in review")
                 }
 		t.Log("PhraseText:", p.PhraseText)
 	}
