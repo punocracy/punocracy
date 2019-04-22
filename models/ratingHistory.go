@@ -41,13 +41,26 @@ func NewUserRatingsConnection(db *mongo.Database) *mongo.Collection {
 }
 
 // AddRating adds a rating for a specific user
-func AddRating(user UserRow, rating int, ratedPhrase Phrase, userRatings *mongo.Collection) error {
+func AddRating(user UserRow, rating int, ratedPhrase Phrase, phrasesCollection *mongo.Collection, userRatings *mongo.Collection) error {
+	// Check if the phrase exists in the phrases collection
+	err := phrasesCollection.FindOne(context.Background(), bson.M{"_id": ratedPhrase.PhraseID}).Err()
+	if err == mongo.ErrNoDocuments {
+		return ErrPhraseNotFound
+	} else if err != nil {
+		return err
+	}
+
+	// Update the phrase to include the rating
+	phraseFilterDoc := bson.M{"_id": ratedPhrase.PhraseID}
+	phraseUpdateDoc := bson.M{"$inc": bson.M{"ratings."
+	_, err = phrasesCollection.UpdateOne(context.Background(), phraseFilterDoc, phraseUpdateDoc)
+
 	// Build UserRating document
 	ratingEntry := UserRating{PhraseID: ratedPhrase.PhraseID, RatingValue: rating, RateDate: time.Now()}
 
 	// Check if user has a rating history entry. If not, create user rating history
 	var userHist UserHistory
-	err := userRatings.FindOne(context.Background(), bson.M{"userID": user.ID}).Decode(&userHist)
+	err = userRatings.FindOne(context.Background(), bson.M{"userID": user.ID}).Decode(&userHist)
 
 	if err == mongo.ErrNoDocuments {
 		userHist.UserID = user.ID
