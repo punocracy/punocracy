@@ -9,6 +9,7 @@ import (
 	"github.com/alvarosness/punocracy/models"
 	"github.com/gorilla/sessions"
 	"github.com/jmoiron/sqlx"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type homePageData struct {
@@ -24,7 +25,7 @@ type resultPageData struct {
 	IsCurator   bool
 	NoPhrases   bool
 	NoWords     bool
-	Puns        []string
+	Puns        []models.Phrase
 }
 
 // HandleRoot redirects to now
@@ -113,12 +114,31 @@ func PostHome(w http.ResponseWriter, r *http.Request) {
 	}
 
 	queryWord := r.FormValue("queryWord")
-	logrus.Infoln(queryWord)
 
 	// TODO: Query DB for words in the same word group
-	// TODO: Query DB for phrases and perform word replacement
+	db := r.Context().Value("db").(*sqlx.DB)
+	wordTable := models.NewWord(db)
 
-	pageData := resultPageData{CurrentUser: currentUser, QueryWord: queryWord, IsCurator: isCurator, NoPhrases: true, NoWords: false, Puns: nil}
+	var noPhrases bool
+	var noWords bool
+
+	words, wordErr := wordTable.QueryHlistString(nil, queryWord)
+
+	if wordErr != nil {
+		noWords = true
+	}
+
+	// TODO: Query DB for phrases
+	mongdb := r.Context().Value("mongodb").(*mongo.Database)
+	phrasesCollection := models.NewPhraseConnection(mongdb)
+	phrases, phraseErr := models.GetPhraseList(words, phrasesCollection)
+
+	if phraseErr != nil {
+		noPhrases = true
+	}
+
+	// TODO: perform word replacement
+	pageData := resultPageData{CurrentUser: currentUser, QueryWord: queryWord, IsCurator: isCurator, NoPhrases: noPhrases, NoWords: noWords, Puns: phrases}
 
 	tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/search.html.tmpl", "templates/query.html.tmpl")
 	if err != nil {
