@@ -4,27 +4,14 @@ import (
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"testing"
 	"time"
 )
 
-// TestAddRating tests the AddRating function
-func TestAddRating(t *testing.T) {
-	// Connect to MongoDB with default URL string
-	mongoDB, err := connectToMongo("mongodb://localhost:27017")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Get userRatings collection and phrases collection
-	userRatings := NewUserRatingsConnection(mongoDB)
-	phrasesCollection := NewPhraseConnection(mongoDB)
-
-	// Get test user
-	testUser := newTestUser()
-
+func newTestPhrase(testUser UserRow) Phrase {
 	// Create the phrase
-	testPhrase := Phrase{
+	return Phrase{
 		PhraseID:        primitive.NewObjectID(),
 		SubmitterUserID: testUser.ID,
 		SubmissionDate:  time.Now(),
@@ -35,9 +22,101 @@ func TestAddRating(t *testing.T) {
 		PhraseText:      "All your base are belong to us.",
 		DisplayPublic:   Accepted,
 	}
+}
+
+// Delete a phrase from the phrases collection
+func deletePhraseFromPhrases(p Phrase, phrasesCollection *mongo.Collection) error {
+	_, err := phrasesCollection.DeleteOne(context.Background(), bson.M{"phraseID": p.PhraseID})
+	return err
+}
+
+// Test checkIfPhraseExists function
+func TestCheckIfPhraseExists(t *testing.T) {
+	// Connect to MongoDB and get phrases collection
+	mongoDB, err := connectToMongo("mongodb://localhost:27017")
+	if err != nil {
+		t.Fatal(err)
+	}
+	phrasesCollection := NewPhraseConnection(mongoDB)
+
+	// Test user and phrase
+	testUser := newTestUser()
+	testPhrase := newTestPhrase(testUser)
+
+	// Check if it exists. Should be false
+	result, err := checkIfPhraseExists(testPhrase, phrasesCollection)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result == true {
+		t.Error("Failed test. Expected phrase not to be in collection.")
+	}
+
+	// Insert into the phrases collection. AddRating should work
+	_, err = phrasesCollection.InsertOne(context.Background(), testPhrase)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Check if it exists. Should be true
+	result, err = checkIfPhraseExists(testPhrase, phrasesCollection)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result == false {
+		t.Error("Failed test. Expected phrase to be present in collection.")
+	}
+
+	// Delete phrase
+	err = deletePhraseFromPhrases(testPhrase, phrasesCollection)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// Test addRatingToPhrase and removeRatingFromPhrase functions
+func TestAddRemoveRatingToPhrase(t *testing.T) {
+	// Connect to MongoDB and get phrases collection
+	mongoDB, err := connectToMongo("mongodb://localhost:27017")
+	if err != nil {
+		t.Fatal(err)
+	}
+	phrasesCollection := NewPhraseConnection(mongoDB)
+
+	testUser := newTestUser()
+	testPhrase := newTestPhrase(testUser)
+
+	// Insert into the phrases collection. AddRating should work
+	_, err = phrasesCollection.InsertOne(context.Background(), testPhrase)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Delete phrase
+	err = deletePhraseFromPhrases(testPhrase, phrasesCollection)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// TestAddRating tests the AddRating function
+func TestAddOrChangeRating(t *testing.T) {
+	// Connect to MongoDB with default URL string
+	mongoDB, err := connectToMongo("mongodb://localhost:27017")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Get userRatings collection and phrases collection
+	userRatings := NewUserRatingsConnection(mongoDB)
+	phrasesCollection := NewPhraseConnection(mongoDB)
+
+	// Get test user and phrase
+	testUser := newTestUser()
+	testPhrase := newTestPhrase(testUser)
 
 	// Add to user's history: should fail
-	err = AddRating(testUser, 5, testPhrase, phrasesCollection, userRatings)
+	err = AddOrChangeRating(testUser, 5, testPhrase, phrasesCollection, userRatings)
 	if err == nil {
 		t.Error("Should not update phrase not in the phrases collection!")
 	} else if err != ErrPhraseNotFound {
@@ -51,7 +130,7 @@ func TestAddRating(t *testing.T) {
 	}
 
 	// Add to the user's history. Should succeed
-	err = AddRating(testUser, 5, testPhrase, phrasesCollection, userRatings)
+	err = AddOrChangeRating(testUser, 5, testPhrase, phrasesCollection, userRatings)
 	if err != nil {
 		t.Fatal(err)
 	}
