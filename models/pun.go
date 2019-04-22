@@ -1,16 +1,24 @@
 package models
 
 import (
+	"regexp"
 	"strings"
+
+	"github.com/Sirupsen/logrus"
 )
 
 // GeneratePuns given query word, homophone word list, and phrase
 func GeneratePuns(word string, homophoneWords []WordRow, phrases []Phrase) []string {
 	puns := []string{}
 
-	// TODO: remove punctuation
+	reg, err := regexp.Compile("[^a-zA-Z0-9]+")
+	if err != nil {
+		logrus.Error(err)
+	}
+
 	for _, phrase := range phrases {
-		tokens := strings.Split(phrase.PhraseText, " ")
+		processedString := reg.ReplaceAllString(phrase.PhraseText, "")
+		tokens := strings.Split(processedString, " ")
 
 		for i, token := range tokens {
 			for _, homophoneWord := range homophoneWords {
