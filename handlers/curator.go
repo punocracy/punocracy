@@ -12,6 +12,7 @@ import (
 
 type curatorPageData struct {
 	CurrentUser *models.UserRow
+	IsCurator   bool
 	Phrases     []string
 }
 
@@ -30,17 +31,21 @@ func GetCurator(w http.ResponseWriter, r *http.Request) {
 
 	session, _ := sessionStore.Get(r, "punocracy-session")
 	currentUser, ok := session.Values["user"].(*models.UserRow)
+
 	if !ok {
-		http.Redirect(w, r, "/logout", 302)
+		http.Redirect(w, r, "/now", 302)
 		return
 	}
 
-	// TODO: Check if user is curator
-	// if not curator redirect to main page
+	isCurator := currentUser.PermLevel <= models.Curator
 
+	if !isCurator {
+		http.Redirect(w, r, "/now", 302)
+		return
+	}
+
+	data := curatorPageData{CurrentUser: currentUser, IsCurator: isCurator, Phrases: nil}
 	// TODO: Query DB for a max number of phrases to be reviewed
-
-	data := curatorPageData{CurrentUser: currentUser, Phrases: nil}
 
 	tmpl, err := template.ParseFiles("templates/dashboard-nosearch.html.tmpl", "templates/curator.html.tmpl")
 	if err != nil {
@@ -60,12 +65,16 @@ func PostCurator(w http.ResponseWriter, r *http.Request) {
 	session, _ := sessionStore.Get(r, "punocracy-session")
 	currentUser, ok := session.Values["user"].(*models.UserRow)
 	if !ok {
-		http.Redirect(w, r, "/logout", 302)
+		http.Redirect(w, r, "/now", 302)
 		return
 	}
 
-	// TODO: Check if user is curator
-	// if not curator redirect to main page
+	isCurator := currentUser.PermLevel <= models.Curator
+
+	if !isCurator {
+		http.Redirect(w, r, "/now", 302)
+		return
+	}
 
 	r.ParseForm()
 	dec := form.NewDecoder()
@@ -77,7 +86,7 @@ func PostCurator(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: Load more phrases from DB to put on the view
 
-	data := curatorPageData{CurrentUser: currentUser, Phrases: nil}
+	data := curatorPageData{CurrentUser: currentUser, IsCurator: isCurator, Phrases: nil}
 
 	tmpl, err := template.ParseFiles("templates/dashboard-nosearch.html.tmpl", "templates/curator.html.tmpl")
 	if err != nil {

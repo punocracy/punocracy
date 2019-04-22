@@ -47,7 +47,7 @@ func GetHome(w http.ResponseWriter, r *http.Request) {
 		currentUser = nil
 		isCurator = false
 	} else {
-		isCurator = currentUser.PermLevel == models.Curator
+		isCurator = currentUser.PermLevel <= models.Curator
 	}
 
 	db := r.Context().Value("db").(*sqlx.DB)
