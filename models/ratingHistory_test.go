@@ -8,7 +8,6 @@ import (
 	"time"
 )
 
-// TODO: write TestAddRating function
 // TestAddRating tests the AddRating function
 func TestAddRating(t *testing.T) {
 	// Connect to MongoDB with default URL string
@@ -17,8 +16,9 @@ func TestAddRating(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Get userRatings collection
+	// Get userRatings collection and phrases collection
 	userRatings := NewUserRatingsConnection(mongoDB)
+	phrasesCollection := NewPhraseConnection(mongoDB)
 
 	// Get test user
 	testUser := newTestUser()
@@ -37,7 +37,7 @@ func TestAddRating(t *testing.T) {
 	}
 
 	// Add to user's history
-	err = AddRating(testUser, 5, testPhrase, userRatings)
+	err = AddRating(testUser, 5, testPhrase, phrasesCollection, userRatings)
 	if err != nil {
 		t.Fatal(err)
 	}
