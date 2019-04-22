@@ -4,6 +4,7 @@ package models
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -43,7 +44,8 @@ func NewUserRatingsConnection(db *mongo.Database) *mongo.Collection {
 // AddRating adds a rating for a specific user
 func AddRating(user UserRow, rating int, ratedPhrase Phrase, phrasesCollection *mongo.Collection, userRatings *mongo.Collection) error {
 	// Check if the phrase exists in the phrases collection
-	err := phrasesCollection.FindOne(context.Background(), bson.M{"_id": ratedPhrase.PhraseID}).Err()
+	var throwawayPhrase Phrase
+	err := phrasesCollection.FindOne(context.Background(), bson.M{"_id": ratedPhrase.PhraseID}).Decode(&throwawayPhrase)
 	if err == mongo.ErrNoDocuments {
 		return ErrPhraseNotFound
 	} else if err != nil {
@@ -52,8 +54,11 @@ func AddRating(user UserRow, rating int, ratedPhrase Phrase, phrasesCollection *
 
 	// Update the phrase to include the rating
 	phraseFilterDoc := bson.M{"_id": ratedPhrase.PhraseID}
-	phraseUpdateDoc := bson.M{"$inc": bson.M{"ratings."
+	phraseUpdateDoc := bson.M{"$inc": bson.M{"ratings." + ratingToRatingString(rating): 1}}
 	_, err = phrasesCollection.UpdateOne(context.Background(), phraseFilterDoc, phraseUpdateDoc)
+	if err != nil {
+		return err
+	}
 
 	// Build UserRating document
 	ratingEntry := UserRating{PhraseID: ratedPhrase.PhraseID, RatingValue: rating, RateDate: time.Now()}
