@@ -44,10 +44,10 @@ func NewUserRatingsConnection(db *mongo.Database) *mongo.Collection {
 }
 
 // Check if a phrase exists in the phrases collection
-func checkIfPhraseExists(p phrase, phrasesCollectino *mongo.Collection) (bool, error) {
+func checkIfPhraseExists(p Phrase, phrasesCollection *mongo.Collection) (bool, error) {
 	// Check if the phrase exists in the phrases collection
 	var throwawayPhrase Phrase
-	err := phrasesCollection.FindOne(context.Background(), bson.M{"_id": ratedPhrase.PhraseID}).Decode(&throwawayPhrase)
+	err := phrasesCollection.FindOne(context.Background(), bson.M{"_id": p.PhraseID}).Decode(&throwawayPhrase)
 	if err == mongo.ErrNoDocuments {
 		return false, nil
 	} else if err != nil {
@@ -91,7 +91,7 @@ func removeRatingFromPhrase(p Phrase, r int, phrasesCollection *mongo.Collection
 	}
 
 	// Update the rating in the database (decrement)
-	phraseFilterDoc := bson.M{"_id": ratedPhrase.PhraseID}
+	phraseFilterDoc := bson.M{"_id": p.PhraseID}
 	phraseUpdateDoc := bson.M{"$inc": bson.M{ratingField: -1}}
 	_, err := phrasesCollection.UpdateOne(context.Background(), phraseFilterDoc, phraseUpdateDoc)
 	return err
@@ -100,14 +100,15 @@ func removeRatingFromPhrase(p Phrase, r int, phrasesCollection *mongo.Collection
 // Add a rating to the phrase
 func addRatingToPhrase(p Phrase, rating int, phrasesCollection *mongo.Collection) error {
 	// Update the phrase to include the rating
-	phraseFilterDoc := bson.M{"_id": ratedPhrase.PhraseID}
+	phraseFilterDoc := bson.M{"_id": p.PhraseID}
 	phraseUpdateDoc := bson.M{"$inc": bson.M{"ratings." + ratingToRatingString(rating): 1}}
-	_, err = phrasesCollection.UpdateOne(context.Background(), phraseFilterDoc, phraseUpdateDoc)
+	_, err := phrasesCollection.UpdateOne(context.Background(), phraseFilterDoc, phraseUpdateDoc)
 	return err
 }
 
 // AddRating adds a rating for a specific user
 func AddOrChangeRating(user UserRow, rating int, ratedPhrase Phrase, phrasesCollection *mongo.Collection, userRatings *mongo.Collection) error {
+	// Ensure the phrase exists in th ecollection
 	phraseExists, err := checkIfPhraseExists(ratedPhrase, phrasesCollection)
 	if err != nil {
 		return err
@@ -135,8 +136,6 @@ func AddOrChangeRating(user UserRow, rating int, ratedPhrase Phrase, phrasesColl
 			}
 		}
 
-		// Change ratings in phrases collection to remove the rating
-
 		// Add to set if it's a new rating or update the rating if it's already been rated
 		if newRatingFlag {
 			// Add document to the user's rating history
@@ -148,7 +147,10 @@ func AddOrChangeRating(user UserRow, rating int, ratedPhrase Phrase, phrasesColl
 			}
 		} else {
 			// Change entry in user's rating history
+			//filterDoc := bson.M{"userID": user.ID, "ratingHistory.phraseID": ratedPhrase.PhraseID}
+
 			// Decrement the rating in the thingy
+			removeRatingFromPhrase(ratedPhrase, oldRating.RatingValue, phrasesCollection)
 		}
 	} else if err == mongo.ErrNoDocuments {
 		userHist.UserID = user.ID
@@ -162,12 +164,7 @@ func AddOrChangeRating(user UserRow, rating int, ratedPhrase Phrase, phrasesColl
 	}
 
 	// Update the phrase to include the rating
-	//phraseFilterDoc := bson.M{"_id": ratedPhrase.PhraseID}
-	//phraseUpdateDoc := bson.M{"$inc": bson.M{"ratings." + ratingToRatingString(rating): 1}}
-	//_, err = phrasesCollection.UpdateOne(context.Background(), phraseFilterDoc, phraseUpdateDoc)
-	//if err != nil {
-	//	return err
-	//}
+	addRatingToPhrase(ratedPhrase, rating, phrasesCollection)
 
 	return nil
 }
