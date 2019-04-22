@@ -6,10 +6,22 @@ import (
 
 	"context"
 
+	"go.mongodb.org/mongo-driver/mongo"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/gorilla/sessions"
 	"github.com/jmoiron/sqlx"
 )
+
+func SetMongo(db *mongo.Database) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+			req = req.WithContext(context.WithValue(req.Context(), "mongodb", db))
+
+			next.ServeHTTP(res, req)
+		})
+	}
+}
 
 func SetDB(db *sqlx.DB) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {

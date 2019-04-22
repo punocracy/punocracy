@@ -1,7 +1,12 @@
 package application
 
 import (
+	"context"
 	"net/http"
+	"time"
+
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/carbocation/interpose"
 	_ "github.com/go-sql-driver/mysql"
@@ -23,6 +28,27 @@ func New(config *viper.Viper) (*Application, error) {
 		return nil, err
 	}
 
+	client, err := mongo.NewClient(options.Client().ApplyURI(urlString))
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	// Connect
+	err = client.Connect(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check connection with ping
+	err = client.Ping(context.TODO(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	mongodb := client.Database("punocracy")
+
 	cookieStoreSecret := config.Get("cookie_secret").(string)
 
 	app := &Application{}
@@ -39,12 +65,14 @@ type Application struct {
 	config       *viper.Viper
 	dsn          string
 	db           *sqlx.DB
+	mongodb      *mongo.Database
 	sessionStore sessions.Store
 }
 
 func (app *Application) MiddlewareStruct() (*interpose.Middleware, error) {
 	middle := interpose.New()
 	middle.Use(middlewares.SetDB(app.db))
+	middle.Use(middlewares.SetMongo(app.mongodb))
 	middle.Use(middlewares.SetSessionStore(app.sessionStore))
 	middle.Use(middlewares.Logging())
 
