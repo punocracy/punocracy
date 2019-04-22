@@ -18,18 +18,18 @@
   {{range .Phrases}}
   <div class="form-row">
     <div class="form-group col-md-9">
-      <input type="text" readonly class="form-control-plaintext" name="{{.PhraseID}}" value="{{.PhraseText}}">
+      <input type="text" readonly class="form-control-plaintext" name="{{.PhraseID.String()}}" value="{{.PhraseText}}">
     </div>
     <div class="form-group col-md-1">
-      <input class="form-check-input position-static" type="radio" name="Status[{{.PhraseID}}]" value="accept"
+      <input class="form-check-input position-static" type="radio" name="Status[{{.PhraseID.String()}}]" value="accept"
         aria-label="...">
     </div>
     <div class="form-group col-md-1">
-      <input class="form-check-input position-static" type="radio" name="Status[{{.PhraseID}}]" value="reject"
+      <input class="form-check-input position-static" type="radio" name="Status[{{.PhraseID.String()}}]" value="reject"
         aria-label="...">
     </div>
     <div class="form-group col-md-1">
-      <input class="form-check-input position-static" type="radio" name="Status[{{.PhraseID}}]" value="review"
+      <input class="form-check-input position-static" type="radio" name="Status[{{.PhraseID.String()}}]" value="review"
         aria-label="...">
     </div>
   </div>
