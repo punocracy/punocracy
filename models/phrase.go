@@ -6,14 +6,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
+	"strings"
+	"time"
+
+	"github.com/Sirupsen/logrus"
 	"github.com/jmoiron/sqlx"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"sort"
-	"strings"
-	"time"
 )
 
 // Display value type
@@ -189,9 +191,12 @@ func InsertPhrase(phraseText string, creator UserRow, wordInstance *Word, phrase
 }
 
 // Accept a reviewed phrase
-func AcceptPhrase(phrase Phrase, reviewer UserRow, phrasesCollection *mongo.Collection) error {
+func AcceptPhrase(phraseIDString string, reviewer UserRow, phrasesCollection *mongo.Collection) error {
+
+	phraseID, _ := primitive.ObjectIDFromHex(phraseIDString)
+	logrus.Infoln(phraseID)
 	// Build update document filter (by _id)
-	filter := bson.M{"_id": phrase.PhraseID}
+	filter := bson.M{"_id": phraseID}
 
 	// Update document
 	updateDocument := bson.M{"$set": bson.M{"reviewedBy": reviewer.ID, "reviewDate": time.Now(), "displayValue": Accepted}}
@@ -206,9 +211,11 @@ func AcceptPhrase(phrase Phrase, reviewer UserRow, phrasesCollection *mongo.Coll
 }
 
 // Set the specified phrase as rejected after review
-func RejectPhrase(phrase Phrase, reviewer UserRow, phrasesCollection *mongo.Collection) error {
+func RejectPhrase(phraseIDString string, reviewer UserRow, phrasesCollection *mongo.Collection) error {
+
+	phraseID, _ := primitive.ObjectIDFromHex(phraseIDString)
 	// Build update document filter (by _id)
-	filter := bson.M{"_id": phrase.PhraseID}
+	filter := bson.M{"_id": phraseID}
 
 	// Update document
 	updateDocument := bson.M{"$set": bson.M{"reviewedBy": reviewer.ID, "reviewDate": time.Now(), "displayValue": Rejected}}

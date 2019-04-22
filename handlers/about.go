@@ -4,7 +4,6 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/alvarosness/punocracy/libhttp"
 	"github.com/alvarosness/punocracy/models"
 	"github.com/gorilla/sessions"
@@ -21,12 +20,19 @@ func GetAbout(w http.ResponseWriter, r *http.Request) {
 
 	sessionStore := r.Context().Value("sessionStore").(sessions.Store)
 
+	var isCurator bool
+
 	session, _ := sessionStore.Get(r, "punocracy-session")
-	currentUser, _ := session.Values["user"].(*models.UserRow)
+	currentUser, ok := session.Values["user"].(*models.UserRow)
 
-	pageData := aboutPageData{CurrentUser: currentUser, IsCurator: false}
+	if !ok {
+		currentUser = nil
+		isCurator = false
+	} else {
+		isCurator = currentUser.PermLevel <= models.Curator
+	}
 
-	logrus.Infoln(pageData)
+	pageData := aboutPageData{CurrentUser: currentUser, IsCurator: isCurator}
 
 	tmpl, err := template.ParseFiles("templates/dashboard-nosearch.html.tmpl", "templates/about.html.tmpl")
 	if err != nil {

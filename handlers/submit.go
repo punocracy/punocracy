@@ -7,12 +7,16 @@ import (
 	"github.com/alvarosness/punocracy/libhttp"
 	"github.com/alvarosness/punocracy/models"
 	"github.com/gorilla/sessions"
+	"github.com/jmoiron/sqlx"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type submitPageData struct {
 	CurrentUser *models.UserRow
 	IsCurator   bool
 }
+
+// TODO: Address illegal access to these views
 
 // GetSubmit generates a page for logged in users to submit their own phrases.
 func GetSubmit(w http.ResponseWriter, r *http.Request) {
@@ -21,9 +25,17 @@ func GetSubmit(w http.ResponseWriter, r *http.Request) {
 	sessionStore := r.Context().Value("sessionStore").(sessions.Store)
 
 	session, _ := sessionStore.Get(r, "punocracy-session")
-	currentUser, _ := session.Values["user"].(*models.UserRow)
+	currentUser, ok := session.Values["user"].(*models.UserRow)
 
-	pageData := submitPageData{currentUser, false}
+	var isCurator bool
+
+	if !ok {
+		http.Redirect(w, r, "/now", http.StatusBadRequest)
+	} else {
+		isCurator = currentUser.PermLevel <= models.Curator
+	}
+
+	pageData := submitPageData{currentUser, isCurator}
 
 	tmpl, err := template.ParseFiles("templates/dashboard-nosearch.html.tmpl", "templates/submit.html.tmpl")
 	if err != nil {
@@ -43,9 +55,32 @@ func PostSubmit(w http.ResponseWriter, r *http.Request) {
 	sessionStore := r.Context().Value("sessionStore").(sessions.Store)
 
 	session, _ := sessionStore.Get(r, "punocracy-session")
-	currentUser, _ := session.Values["user"].(*models.UserRow)
+	currentUser, ok := session.Values["user"].(*models.UserRow)
 
-	pageData := submitPageData{currentUser, false}
+	var isCurator bool
+
+	if !ok {
+		http.Redirect(w, r, "/now", http.StatusBadRequest)
+	} else {
+		isCurator = currentUser.PermLevel <= models.Curator
+	}
+
+	db := r.Context().Value("db").(*sqlx.DB)
+
+	mongdb := r.Context().Value("mongodb").(*mongo.Database)
+	phrase := r.FormValue("phraseText")
+
+	phrasesCollection := models.NewPhraseConnection(mongdb)
+	word := models.NewWord(db)
+
+	err := models.InsertPhrase(phrase, *currentUser, word, phrasesCollection)
+	if err != nil {
+		// TODO: Handle multiple types of errors
+		http.Redirect(w, r, "/now", http.StatusBadRequest)
+		return
+	}
+
+	pageData := submitPageData{currentUser, isCurator}
 
 	tmpl, err := template.ParseFiles("templates/dashboard-nosearch.html.tmpl", "templates/submit.html.tmpl")
 	if err != nil {

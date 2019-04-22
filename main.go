@@ -23,6 +23,7 @@ func newConfig() (*viper.Viper, error) {
 
 	c := viper.New()
 	c.SetDefault("dsn", defaultDSN)
+	c.SetDefault("mongoURL", "mongodb://localhost:27017")
 	c.SetDefault("cookie_secret", "zu7HZy1Da2abXWPP")
 	c.SetDefault("http_addr", ":8888")
 	c.SetDefault("http_cert_file", "")

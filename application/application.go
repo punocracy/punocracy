@@ -22,6 +22,7 @@ import (
 // New is the constructor for Application struct.
 func New(config *viper.Viper) (*Application, error) {
 	dsn := config.Get("dsn").(string)
+	urlString := config.Get("mongoURL").(string)
 
 	db, err := sqlx.Connect("mysql", dsn)
 	if err != nil {
@@ -55,6 +56,7 @@ func New(config *viper.Viper) (*Application, error) {
 	app.config = config
 	app.dsn = dsn
 	app.db = db
+	app.mongodb = mongodb
 	app.sessionStore = sessions.NewCookieStore([]byte(cookieStoreSecret))
 
 	return app, nil
@@ -85,6 +87,9 @@ func (app *Application) mux() *gorilla_mux.Router {
 	MustLogin := middlewares.MustLogin
 
 	router := gorilla_mux.NewRouter()
+
+	// TODO: Implement PageNotFound Handler. I tried and it no work
+	// router.NotFoundHandler = http.HandlerFunc(handlers.HandleNotFound)
 
 	router.Handle("/now", http.HandlerFunc(handlers.GetHome)).Methods("GET")
 	router.Handle("/now", http.HandlerFunc(handlers.PostHome)).Methods("POST")
