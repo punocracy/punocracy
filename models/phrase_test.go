@@ -63,6 +63,8 @@ func connectToMongo(urlString string) (*mongo.Database, error) {
 	return client.Database("punocracy"), nil
 }
 
+// Test DeleteByUserID
+
 // Test GetPhraseList
 func TestGetPhraseList(t *testing.T) {
 	// Connect to MongoDB with default URL string

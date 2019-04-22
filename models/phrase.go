@@ -275,12 +275,12 @@ func GetPhraseListForCurators(maxPhrases int64, phrasesCollection *mongo.Collect
 }
 
 // Delete all phrases by a single userID
-func DeleteBySingleUser(user UserRow, phrasesCollection *mongo.Collection) error {
+func DeleteByUserID(user UserRow, phrasesCollection *mongo.Collection) error {
 	// Build query document
-	queryDocument := bson.M{"submitterUserID": user.ID}
+	filterDocument := bson.M{"submitterUserID": user.ID}
 
 	// Execute delete statement
-	_, err := phrasesCollection.DeleteMany(context.Background(), queryDocument)
+	_, err := phrasesCollection.DeleteMany(context.Background(), filterDocument)
 	return err
 }
 
