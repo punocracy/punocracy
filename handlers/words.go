@@ -32,7 +32,7 @@ func GetWords(w http.ResponseWriter, r *http.Request) {
 		currentUser = nil
 		isCurator = false
 	} else {
-		isCurator = currentUser.PermLevel == models.Curator
+		isCurator = currentUser.PermLevel <= models.Curator
 	}
 
 	vars := mux.Vars(r)

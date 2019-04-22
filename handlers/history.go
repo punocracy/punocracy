@@ -31,7 +31,7 @@ func GetHistory(w http.ResponseWriter, r *http.Request) {
 		currentUser = nil
 		isCurator = false
 	} else {
-		isCurator = currentUser.PermLevel == models.Curator
+		isCurator = currentUser.PermLevel <= models.Curator
 	}
 
 	pageData := historyPageData{CurrentUser: currentUser, IsCurator: isCurator, RatedPhrases: nil, SubmittedPhrases: nil}

@@ -21,10 +21,19 @@ func GetAbout(w http.ResponseWriter, r *http.Request) {
 
 	sessionStore := r.Context().Value("sessionStore").(sessions.Store)
 
-	session, _ := sessionStore.Get(r, "punocracy-session")
-	currentUser, _ := session.Values["user"].(*models.UserRow)
+	var isCurator bool
 
-	pageData := aboutPageData{CurrentUser: currentUser, IsCurator: false}
+	session, _ := sessionStore.Get(r, "punocracy-session")
+	currentUser, ok := session.Values["user"].(*models.UserRow)
+
+	if !ok {
+		currentUser = nil
+		isCurator = false
+	} else {
+		isCurator = currentUser.PermLevel <= models.Curator
+	}
+
+	pageData := aboutPageData{CurrentUser: currentUser, IsCurator: isCurator}
 
 	logrus.Infoln(pageData)
 

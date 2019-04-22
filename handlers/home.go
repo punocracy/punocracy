@@ -76,8 +76,13 @@ func PostHome(w http.ResponseWriter, r *http.Request) {
 	session, _ := sessionStore.Get(r, "punocracy-session")
 	currentUser, ok := session.Values["user"].(*models.UserRow)
 
+	var isCurator bool
+
 	if !ok {
 		currentUser = nil
+		isCurator = false
+	} else {
+		isCurator = currentUser.PermLevel <= models.Curator
 	}
 
 	queryWord := r.FormValue("queryWord")
@@ -86,7 +91,7 @@ func PostHome(w http.ResponseWriter, r *http.Request) {
 	// TODO: Query DB for words in the same word group
 	// TODO: Query DB for phrases and perform word replacement
 
-	pageData := resultPageData{CurrentUser: currentUser, QueryWord: queryWord, IsCurator: false, NoPhrases: true, NoWords: false, Puns: nil}
+	pageData := resultPageData{CurrentUser: currentUser, QueryWord: queryWord, IsCurator: isCurator, NoPhrases: true, NoWords: false, Puns: nil}
 
 	tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/search.html.tmpl", "templates/query.html.tmpl")
 	if err != nil {

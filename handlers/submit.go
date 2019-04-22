@@ -25,9 +25,17 @@ func GetSubmit(w http.ResponseWriter, r *http.Request) {
 	sessionStore := r.Context().Value("sessionStore").(sessions.Store)
 
 	session, _ := sessionStore.Get(r, "punocracy-session")
-	currentUser, _ := session.Values["user"].(*models.UserRow)
+	currentUser, ok := session.Values["user"].(*models.UserRow)
 
-	pageData := submitPageData{currentUser, false}
+	var isCurator bool
+
+	if !ok {
+		http.Redirect(w, r, "/now", http.StatusBadRequest)
+	} else {
+		isCurator = currentUser.PermLevel <= models.Curator
+	}
+
+	pageData := submitPageData{currentUser, isCurator}
 
 	tmpl, err := template.ParseFiles("templates/dashboard-nosearch.html.tmpl", "templates/submit.html.tmpl")
 	if err != nil {
@@ -47,7 +55,15 @@ func PostSubmit(w http.ResponseWriter, r *http.Request) {
 	sessionStore := r.Context().Value("sessionStore").(sessions.Store)
 
 	session, _ := sessionStore.Get(r, "punocracy-session")
-	currentUser, _ := session.Values["user"].(*models.UserRow)
+	currentUser, ok := session.Values["user"].(*models.UserRow)
+
+	var isCurator bool
+
+	if !ok {
+		http.Redirect(w, r, "/now", http.StatusBadRequest)
+	} else {
+		isCurator = currentUser.PermLevel <= models.Curator
+	}
 
 	db := r.Context().Value("db").(*sqlx.DB)
 
@@ -63,7 +79,7 @@ func PostSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pageData := submitPageData{currentUser, false}
+	pageData := submitPageData{currentUser, isCurator}
 
 	tmpl, err := template.ParseFiles("templates/dashboard-nosearch.html.tmpl", "templates/submit.html.tmpl")
 	if err != nil {
