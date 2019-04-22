@@ -75,10 +75,12 @@ func PostSubmit(w http.ResponseWriter, r *http.Request) {
 	word := models.NewWord(db)
 
 	err := models.InsertPhrase(phrase, *currentUser, word, phrasesCollection)
+	logrus.Infoln("Before")
 	if err != nil {
 		logrus.Errorln(err.Error())
+		logrus.Infoln("After")
 		// TODO: Handle multiple types of errors
-		http.Redirect(w, r, "/now", http.StatusBadRequest)
+		http.Redirect(w, r, "/now", 302)
 		return
 	}
 
