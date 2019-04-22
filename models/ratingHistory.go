@@ -103,3 +103,23 @@ func GetRatingsByUserID(user UserRow, userRatings *mongo.Collection) ([]UserRati
 // TODO: write DeleteUserRatings function
 // TODO: write updateRatingByUser to update the rating in the phrases collection
 // NOTE: Make everything propagate to the phrases table
+
+// Convert an integer rating to its corresponding document string
+func ratingToRatingString(r int) string {
+	var s string
+	switch r {
+	case 1:
+		s = "one"
+	case 2:
+		s = "two"
+	case 3:
+		s = "three"
+	case 4:
+		s = "four"
+	case 5:
+		s = "five"
+	default:
+		s = ""
+	}
+	return s
+}
