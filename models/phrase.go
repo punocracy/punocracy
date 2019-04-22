@@ -274,11 +274,19 @@ func GetPhraseListForCurators(maxPhrases int64, phrasesCollection *mongo.Collect
 	return phraseList, nil
 }
 
-// TODO: add delete all by userID function
+// Delete all phrases by a single userID
+func DeleteBySingleUser(user UserRow, phrasesCollection *mongo.Collection) error {
+	// Build query document
+	queryDocument := bson.M{"submitterUserID": user.ID}
+
+	// Execute delete statement
+	_, err := phrasesCollection.DeleteMany(context.Background(), queryDocument)
+	return err
+}
+
 // TODO: add function to anonymize by userID
 // TODO: add function to get phrases by userID
 
-// TODO: write this
 // Query for phrases from a list of words
 func GetPhraseList(wordList []WordRow, phrasesCollection *mongo.Collection) ([]Phrase, error) {
 	// Get list of word IDS from wordList
