@@ -40,7 +40,7 @@ func GetCurator(w http.ResponseWriter, r *http.Request) {
 	}
 
 	isCurator := currentUser.PermLevel <= models.Curator
-	logrus.Infoln(currentUser.PermLevel)
+	logrus.Infoln(models.Unreviewed)
 
 	if !isCurator {
 		http.Redirect(w, r, "/now", 302)

@@ -4,7 +4,6 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/alvarosness/punocracy/libhttp"
 	"github.com/alvarosness/punocracy/models"
 	"github.com/gorilla/sessions"
@@ -34,8 +33,6 @@ func GetAbout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pageData := aboutPageData{CurrentUser: currentUser, IsCurator: isCurator}
-
-	logrus.Infoln(pageData)
 
 	tmpl, err := template.ParseFiles("templates/dashboard-nosearch.html.tmpl", "templates/about.html.tmpl")
 	if err != nil {
