@@ -55,6 +55,8 @@ func GetCurator(w http.ResponseWriter, r *http.Request) {
 	phrasesCollection := models.NewPhraseConnection(mongdb)
 	phrases, _ := models.GetPhraseListForCurators(5, *currentUser, phrasesCollection)
 
+	logrus.Infoln(phrases)
+
 	pagePhrases := []curatePhrase{}
 
 	for _, v := range phrases {
