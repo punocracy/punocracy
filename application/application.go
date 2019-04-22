@@ -88,7 +88,6 @@ func (app *Application) mux() *gorilla_mux.Router {
 
 	router := gorilla_mux.NewRouter()
 
-	router.Host("gopunned.me")
 	router.NotFoundHandler = http.HandlerFunc(handlers.HandleNotFound)
 
 	router.Handle("/now", http.HandlerFunc(handlers.GetHome)).Methods("GET")
