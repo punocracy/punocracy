@@ -11,4 +11,8 @@ import (
 	"time"
 )
 
-// TODO: everything
+// TODO: write AddRating function
+// TODO: write ChangeRating function
+// TODO: write DeleteRating function
+// TODO: write GetRatingsByUserID function (sorted by date)
+// TODO: write DeleteUserRatings function
