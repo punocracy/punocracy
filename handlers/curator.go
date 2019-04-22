@@ -45,7 +45,6 @@ func GetCurator(w http.ResponseWriter, r *http.Request) {
 	}
 
 	isCurator := currentUser.PermLevel <= models.Curator
-	logrus.Infoln(models.Unreviewed)
 
 	if !isCurator {
 		http.Redirect(w, r, "/now", 302)
@@ -59,7 +58,7 @@ func GetCurator(w http.ResponseWriter, r *http.Request) {
 	pagePhrases := []curatePhrase{}
 
 	for _, v := range phrases {
-		pagePhrases = append(pagePhrases, curatePhrase{v.PhraseID.String(), v.PhraseText})
+		pagePhrases = append(pagePhrases, curatePhrase{v.PhraseID.Hex(), v.PhraseText})
 	}
 
 	data := curatorPageData{CurrentUser: currentUser, IsCurator: isCurator, Phrases: pagePhrases}
@@ -120,7 +119,7 @@ func PostCurator(w http.ResponseWriter, r *http.Request) {
 	pagePhrases := []curatePhrase{}
 
 	for _, v := range phrases {
-		pagePhrases = append(pagePhrases, curatePhrase{v.PhraseID.String(), v.PhraseText})
+		pagePhrases = append(pagePhrases, curatePhrase{v.PhraseID.Hex(), v.PhraseText})
 	}
 
 	data := curatorPageData{CurrentUser: currentUser, IsCurator: isCurator, Phrases: pagePhrases}

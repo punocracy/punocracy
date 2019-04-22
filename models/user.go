@@ -51,7 +51,6 @@ type User struct {
 func (u *User) userRowFromSQLResult(tx *sqlx.Tx, sqlResult sql.Result) (*UserRow, error) {
 	userID, err := sqlResult.LastInsertId()
 	if err != nil {
-		logrus.Infoln("this happened in userRowFromSQL")
 		logrus.Infoln(err)
 		return nil, err
 	}
@@ -172,17 +171,17 @@ func (u *User) UpdateEmailAndPasswordByID(tx *sqlx.Tx, userID int64, email, pass
 }
 
 /*
-    Delete user from SQL user table
-    Given a user row, delete user
-    return err
-    MAKE ATOMIC
+   Delete user from SQL user table
+   Given a user row, delete user
+   return err
+   MAKE ATOMIC
 */
-func (u *User) DeleteUser(tx *sqlx.Tx, userD UserRow) (error){
-    
-    deleteQuery := fmt.Sprintf("userID=%v",userD.ID)
-    _,err := u.DeleteFromTable(tx,deleteQuery)
-    if err != nil{
-        return err
-    }
-    return nil
+func (u *User) DeleteUser(tx *sqlx.Tx, userD UserRow) error {
+
+	deleteQuery := fmt.Sprintf("userID=%v", userD.ID)
+	_, err := u.DeleteFromTable(tx, deleteQuery)
+	if err != nil {
+		return err
+	}
+	return nil
 }
