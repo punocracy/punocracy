@@ -33,16 +33,30 @@ func TestAddRating(t *testing.T) {
 		ReviewedBy:      0,
 		ReviewDate:      time.Now(),
 		PhraseText:      "All your base are belong to us.",
-		DisplayPublic:   Unreviewed,
+		DisplayPublic:   Accepted,
 	}
 
-	// Add to user's history
+	// Add to user's history: should fail
+	err = AddRating(testUser, 5, testPhrase, phrasesCollection, userRatings)
+	if err == nil {
+		t.Error("Should not update phrase not in the phrases collection!")
+	} else if err != ErrPhraseNotFound {
+		t.Fatal(err)
+	}
+
+	// Insert into the phrases collection. AddRating should work
+	_, err = phrasesCollection.InsertOne(context.Background(), testPhrase)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Add to the user's history. Should succeed
 	err = AddRating(testUser, 5, testPhrase, phrasesCollection, userRatings)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Check for the rating
+	// Check for the rating.
 	var testUserHist UserHistory
 	err = userRatings.FindOne(context.Background(), bson.M{"userID": testUser.ID}).Decode(&testUserHist)
 	if err != nil {
@@ -61,10 +75,11 @@ func TestAddRating(t *testing.T) {
 		t.Error("Could not find testUser rating. testUserHist:", testUserHist)
 	}
 
+	// TODO: check if the ratings were updated
+
 	// Add second rating
 	//testRating.PhraseID = primitive.NewObjectID()
 	//testRating.SubmissionDate = time.Now()
-
 }
 
 // TODO: write TestChangeRating function
