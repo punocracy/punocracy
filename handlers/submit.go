@@ -75,7 +75,8 @@ func PostSubmit(w http.ResponseWriter, r *http.Request) {
 
 	err := models.InsertPhrase(phrase, *currentUser, word, phrasesCollection)
 	if err != nil {
-		libhttp.HandleErrorJson(w, err)
+		// TODO: Handle multiple types of errors
+		http.Redirect(w, r, "/now", http.StatusBadRequest)
 		return
 	}
 

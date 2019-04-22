@@ -15,7 +15,12 @@ import (
 type curatorPageData struct {
 	CurrentUser *models.UserRow
 	IsCurator   bool
-	Phrases     []models.Phrase
+	Phrases     []curatePhrase
+}
+
+type curatePhrase struct {
+	PhraseID   string
+	PhraseText string
 }
 
 // TestData I was testing the "github.com/go-playground/form" library. This helped with parsing array/struct/map like input from html forms
@@ -51,7 +56,13 @@ func GetCurator(w http.ResponseWriter, r *http.Request) {
 	phrasesCollection := models.NewPhraseConnection(mongdb)
 	phrases, _ := models.GetPhraseListForCurators(5, phrasesCollection)
 
-	data := curatorPageData{CurrentUser: currentUser, IsCurator: isCurator, Phrases: phrases}
+	pagePhrases := []curatePhrase{}
+
+	for _, v := range phrases {
+		pagePhrases = append(pagePhrases, curatePhrase{v.PhraseID.String(), v.PhraseText})
+	}
+
+	data := curatorPageData{CurrentUser: currentUser, IsCurator: isCurator, Phrases: pagePhrases}
 
 	tmpl, err := template.ParseFiles("templates/dashboard-nosearch.html.tmpl", "templates/curator.html.tmpl")
 	if err != nil {
@@ -106,7 +117,13 @@ func PostCurator(w http.ResponseWriter, r *http.Request) {
 	// TODO: Load more phrases from DB to put on the view
 	phrases, _ := models.GetPhraseListForCurators(5, phrasesCollection)
 
-	data := curatorPageData{CurrentUser: currentUser, IsCurator: isCurator, Phrases: phrases}
+	pagePhrases := []curatePhrase{}
+
+	for _, v := range phrases {
+		pagePhrases = append(pagePhrases, curatePhrase{v.PhraseID.String(), v.PhraseText})
+	}
+
+	data := curatorPageData{CurrentUser: currentUser, IsCurator: isCurator, Phrases: pagePhrases}
 
 	tmpl, err := template.ParseFiles("templates/dashboard-nosearch.html.tmpl", "templates/curator.html.tmpl")
 	if err != nil {
