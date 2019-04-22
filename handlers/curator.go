@@ -53,7 +53,12 @@ func GetCurator(w http.ResponseWriter, r *http.Request) {
 
 	mongdb := r.Context().Value("mongodb").(*mongo.Database)
 	phrasesCollection := models.NewPhraseConnection(mongdb)
-	phrases, _ := models.GetPhraseListForCurators(5, *currentUser, phrasesCollection)
+	phrases, err := models.GetPhraseListForCurators(5, *currentUser, phrasesCollection)
+
+	if err != nil {
+		logrus.Errorln(err.Error())
+	}
+	logrus.Infoln(phrases)
 
 	pagePhrases := []curatePhrase{}
 

@@ -369,17 +369,21 @@ func GetNewPhraseListForCurators(maxPhrases int64, curatingUser UserRow ,phrases
 		return nil, err
 	}
 
-	// Set phrases to be in review
-        // and assigned to curator
-	filter := bson.M{"_id": bson.M{"$in": phraseObjectIDs}}
-	update := bson.M{"$set": bson.M{ "reviewedBy": curatingUser.ID, "displayValue": InReview}}
-	_, err = phrasesCollection.UpdateMany(context.Background(), filter, update)
-	if err != nil {
-		return nil, err
-	}
+        if len(phraseList) != 0{
+            // Set phrases to be in review
+            // and assigned to curator
+            filter := bson.M{"_id": bson.M{"$in": phraseObjectIDs}}
+            update := bson.M{"$set": bson.M{ "reviewedBy": curatingUser.ID, "displayValue": InReview}}
+            _, err = phrasesCollection.UpdateMany(context.Background(), filter, update)
+            if err != nil {
+                    return nil, err
+            }
 
-	// Sort the phrases
-	sortPhrases(phraseList)
+            // Sort the phrases
+            sortPhrases(phraseList)
+
+        }
+
 
 	// Return the result
 	return phraseList, nil
