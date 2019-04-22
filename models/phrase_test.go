@@ -29,11 +29,11 @@ func newDBConnection() (*sqlx.DB, error) {
 func newTestUser() UserRow {
 	// Example UserRow
 	testUser := UserRow{
-		ID:        2,
-		Username:  "testerUser",
-		Email:     "test@testerson.com",
-		Password:  "asdf",
-		PermLevel: 0,
+		ID:           2,
+		Username:     "testerUser",
+		Email:        "test@testerson.com",
+		PasswordHash: "asdf",
+		PermLevel:    0,
 	}
 	return testUser
 }
@@ -75,7 +75,7 @@ func TestGetPhraseList(t *testing.T) {
 	phrasesCollection := NewPhraseConnection(mongoDB)
 
 	// List of words to search for
-	wordList := []Word{
+	wordList := []WordRow{
 		{1414, "two", 625},
 		{189, "to", 625},
 		//{831, "too", 625},
