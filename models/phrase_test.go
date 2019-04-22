@@ -337,3 +337,61 @@ func TestAcceptRejectPhrase(t *testing.T) {
 	}
 
 }
+
+//Test AnonimizeUserData
+func TestAnonimizeUserData(t *testing.T){
+
+	// Connect to MongoDB with default URL string
+	mongoDB, err := connectToMongo("mongodb://localhost:27017")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+        // Get the phrases collection from the database
+        phrasesCollection := NewPhraseConnection(mongoDB)
+
+        // Get test user
+        testUser := newTestUser()
+        err = AnonimizeUserData(testUser,phrasesCollection)
+
+	// Create the phrase
+	testPhrase := Phrase{
+		PhraseID:        primitive.NewObjectID(),
+		SubmitterUserID: testUser.ID,
+		SubmissionDate:  time.Now(),
+		PhraseRatings:   Rating{},
+		WordList:        []int{1454, 518, 588, 189, 71},
+		ReviewedBy:      0,
+		ReviewDate:      time.Now(),
+		PhraseText:      "All your base are belong to us.",
+		DisplayPublic:   Unreviewed,
+	}
+        if err != nil {
+                t.Fatal(err)
+        }
+
+	// Insert into collection
+	_, err = phrasesCollection.InsertOne(context.Background(), testPhrase)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+        // Test anonimize data
+        err = AnonimizeUserData(testUser, phrasesCollection)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Find the phrase and check if the submitter is anon
+        // to decode is to "store"
+	var queryPhrase Phrase
+	err = phrasesCollection.FindOne(context.Background(), bson.M{"_id": testPhrase.PhraseID}).Decode(&queryPhrase)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if queryPhrase.SubmitterUserID != 0 {
+		t.Error("Phrase was not accepted! PhraseID: ", queryPhrase.PhraseID)
+	}
+}
