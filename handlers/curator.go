@@ -82,17 +82,29 @@ func PostCurator(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	mongdb := r.Context().Value("mongodb").(*mongo.Database)
+	phrasesCollection := models.NewPhraseConnection(mongdb)
+
 	r.ParseForm()
 	dec := form.NewDecoder()
 
 	var res TestData
 
 	dec.Decode(&res, r.Form)
+
 	// TODO: Update DB based on the status of each of the reviewed phrases
+	for k, v := range res.Status {
+		if v == "accept" {
+			models.AcceptPhrase(k, *currentUser, phrasesCollection)
+		} else if v == "reject" {
+			models.RejectPhrase(k, *currentUser, phrasesCollection)
+		}
+	}
 
 	// TODO: Load more phrases from DB to put on the view
+	phrases, _ := models.GetPhraseListForCurators(5, phrasesCollection)
 
-	data := curatorPageData{CurrentUser: currentUser, IsCurator: isCurator, Phrases: nil}
+	data := curatorPageData{CurrentUser: currentUser, IsCurator: isCurator, Phrases: phrases}
 
 	tmpl, err := template.ParseFiles("templates/dashboard-nosearch.html.tmpl", "templates/curator.html.tmpl")
 	if err != nil {
