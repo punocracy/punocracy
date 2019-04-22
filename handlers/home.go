@@ -138,6 +138,10 @@ func PostHome(w http.ResponseWriter, r *http.Request) {
 		noPhrases = true
 	}
 
+	if len(phrases) == 0 {
+		noPhrases = true
+	}
+
 	// TODO: perform word replacement
 	pageData := resultPageData{CurrentUser: currentUser, QueryWord: queryWord, IsCurator: isCurator, NoPhrases: noPhrases, NoWords: noWords, Puns: []string{"One", "Two"}, Phrases: phrases}
 
