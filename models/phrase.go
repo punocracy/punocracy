@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/jmoiron/sqlx"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -193,6 +194,7 @@ func InsertPhrase(phraseText string, creator UserRow, wordInstance *Word, phrase
 func AcceptPhrase(phraseIDString string, reviewer UserRow, phrasesCollection *mongo.Collection) error {
 
 	phraseID, _ := primitive.ObjectIDFromHex(phraseIDString)
+	logrus.Infoln(phraseID)
 	// Build update document filter (by _id)
 	filter := bson.M{"_id": phraseID}
 

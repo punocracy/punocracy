@@ -95,8 +95,10 @@ func PostCurator(w http.ResponseWriter, r *http.Request) {
 	// TODO: Update DB based on the status of each of the reviewed phrases
 	for k, v := range res.Status {
 		if v == "accept" {
+			logrus.Infoln(k, "was", v)
 			models.AcceptPhrase(k, *currentUser, phrasesCollection)
 		} else if v == "reject" {
+			logrus.Infoln(k, "was", v)
 			models.RejectPhrase(k, *currentUser, phrasesCollection)
 		}
 	}
