@@ -137,7 +137,7 @@ func fakeGetWordIDList(words []string, db *sqlx.DB) ([]int, error) {
 }
 
 // Insert a candidate phrase submitted by a user
-func InsertPhrase(phraseText string, creator UserRow, sqlDB *sqlx.DB, phrasesCollection *mongo.Collection) error {
+func InsertPhrase(phraseText string, creator UserRow, wordInstance *Word, phrasesCollection *mongo.Collection) error {
 	// Split into lowercase words by space character
 	allWords := strings.Split(strings.ToLower(phraseText), " ")
 
@@ -155,8 +155,7 @@ func InsertPhrase(phraseText string, creator UserRow, sqlDB *sqlx.DB, phrasesCol
 	}
 
 	// Query the database to check if any of the words are homophones
-	// TODO: replace with safe function
-	wordIDs, err := fakeGetWordIDList(uniqueWords, sqlDB)
+	wordIDs, err := wordInstance.GetWordIDList(nil, uniqueWords)
 	if err != nil {
 		return err
 	}

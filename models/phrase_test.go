@@ -109,6 +109,7 @@ func TestGetPhrasesForCurators(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	wordInstance := NewWord(sqlDB)
 
 	// Example UserRow
 	testUser := newTestUser()
@@ -125,7 +126,7 @@ func TestGetPhrasesForCurators(t *testing.T) {
 	// Insert each phrase
 	for _, phrase := range testPhrases {
 		// Try to insert the phrase
-		err := InsertPhrase(phrase, testUser, sqlDB, phrasesCollection)
+		err := InsertPhrase(phrase, testUser, wordInstance, phrasesCollection)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -221,6 +222,9 @@ func TestInsertPhrase(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// Create instance of Word type
+	wordInstance := NewWord(sqlDB)
+
 	// Example UserRow
 	testUser := newTestUser()
 
@@ -239,7 +243,7 @@ func TestInsertPhrase(t *testing.T) {
 	for _, phrase := range testPhrases {
 		// Try to insert the phrase
 		var successVal bool
-		err := InsertPhrase(phrase.input, testUser, sqlDB, phrasesCollection)
+		err := InsertPhrase(phrase.input, testUser, wordInstance, phrasesCollection)
 		successVal = (err == nil)
 
 		// Check the value
