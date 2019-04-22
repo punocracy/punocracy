@@ -17,7 +17,7 @@ func GeneratePuns(word string, homophoneWords []WordRow, phrases []Phrase) []str
 	}
 
 	for _, phrase := range phrases {
-		processedString := reg.ReplaceAllString(phrase.PhraseText, "")
+		processedString := reg.ReplaceAllString(phrase.PhraseText, " ")
 		tokens := strings.Split(processedString, " ")
 
 		for i, token := range tokens {
