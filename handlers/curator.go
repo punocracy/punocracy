@@ -8,6 +8,7 @@ import (
 	"github.com/alvarosness/punocracy/models"
 	"github.com/go-playground/form"
 	"github.com/gorilla/sessions"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type curatorPageData struct {
@@ -44,8 +45,17 @@ func GetCurator(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := curatorPageData{CurrentUser: currentUser, IsCurator: isCurator, Phrases: nil}
-	// TODO: Query DB for a max number of phrases to be reviewed
+	mongdb := r.Context().Value("mongodb").(*mongo.Database)
+	phrasesCollection := models.NewPhraseConnection(mongdb)
+	phrases, _ := models.GetPhraseListForCurators(5, phrasesCollection)
+
+	phrasesForPage := []string{}
+
+	for _, phrase := range phrases {
+		phrasesForPage = append(phrasesForPage, phrase.PhraseText)
+	}
+
+	data := curatorPageData{CurrentUser: currentUser, IsCurator: isCurator, Phrases: phrasesForPage}
 
 	tmpl, err := template.ParseFiles("templates/dashboard-nosearch.html.tmpl", "templates/curator.html.tmpl")
 	if err != nil {
