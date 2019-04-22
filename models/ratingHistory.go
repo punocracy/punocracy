@@ -16,3 +16,4 @@ import (
 // TODO: write DeleteRating function
 // TODO: write GetRatingsByUserID function (sorted by date)
 // TODO: write DeleteUserRatings function
+// NOTE: Make everything propagate to the phrases table
