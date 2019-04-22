@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"net/http"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/alvarosness/punocracy/libhttp"
 	"github.com/alvarosness/punocracy/models"
 	"github.com/gorilla/sessions"
@@ -30,7 +31,7 @@ func GetSubmit(w http.ResponseWriter, r *http.Request) {
 	var isCurator bool
 
 	if !ok {
-		http.Redirect(w, r, "/now", http.StatusBadRequest)
+		http.Redirect(w, r, "/now", http.StatusFound)
 	} else {
 		isCurator = currentUser.PermLevel <= models.Curator
 	}
@@ -60,7 +61,7 @@ func PostSubmit(w http.ResponseWriter, r *http.Request) {
 	var isCurator bool
 
 	if !ok {
-		http.Redirect(w, r, "/now", http.StatusBadRequest)
+		http.Redirect(w, r, "/now", http.StatusFound)
 	} else {
 		isCurator = currentUser.PermLevel <= models.Curator
 	}
@@ -74,9 +75,12 @@ func PostSubmit(w http.ResponseWriter, r *http.Request) {
 	word := models.NewWord(db)
 
 	err := models.InsertPhrase(phrase, *currentUser, word, phrasesCollection)
+	logrus.Infoln("Before")
 	if err != nil {
+		logrus.Errorln(err.Error())
+		logrus.Infoln("After")
 		// TODO: Handle multiple types of errors
-		http.Redirect(w, r, "/now", http.StatusBadRequest)
+		http.Redirect(w, r, "/now", http.StatusFound)
 		return
 	}
 
