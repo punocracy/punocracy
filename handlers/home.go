@@ -25,7 +25,8 @@ type resultPageData struct {
 	IsCurator   bool
 	NoPhrases   bool
 	NoWords     bool
-	Puns        []models.Phrase
+	Puns        []string
+	Phrases     []models.Phrase
 }
 
 // HandleRoot redirects to now
@@ -138,7 +139,7 @@ func PostHome(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// TODO: perform word replacement
-	pageData := resultPageData{CurrentUser: currentUser, QueryWord: queryWord, IsCurator: isCurator, NoPhrases: noPhrases, NoWords: noWords, Puns: phrases}
+	pageData := resultPageData{CurrentUser: currentUser, QueryWord: queryWord, IsCurator: isCurator, NoPhrases: noPhrases, NoWords: noWords, Puns: []string{"One", "Two"}, Phrases: phrases}
 
 	tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/search.html.tmpl", "templates/query.html.tmpl")
 	if err != nil {
