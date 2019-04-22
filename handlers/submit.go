@@ -80,7 +80,7 @@ func PostSubmit(w http.ResponseWriter, r *http.Request) {
 		logrus.Errorln(err.Error())
 		logrus.Infoln("After")
 		// TODO: Handle multiple types of errors
-		http.Redirect(w, r, "/now", 302)
+		http.Redirect(w, r, "/now", http.StatusBadRequest)
 		return
 	}
 
