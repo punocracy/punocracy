@@ -170,3 +170,19 @@ func (u *User) UpdateEmailAndPasswordByID(tx *sqlx.Tx, userID int64, email, pass
 
 	return u.GetByID(tx, userID)
 }
+
+/*
+    Delete user from SQL user table
+    Given a user row, delete user
+    return err
+    MAKE ATOMIC
+*/
+func (u *User) DeleteUser(tx *sqlx.Tx, userD UserRow) (error){
+    
+    deleteQuery := fmt.Sprintf("userID=%v",userD.ID)
+    _,err := u.DeleteFromTable(tx,deleteQuery)
+    if err != nil{
+        return err
+    }
+    return nil
+}

@@ -1,14 +1,26 @@
 package models
-/*
+
 import (
-	_ "github.com/go-sql-driver/mysql"
+	_"github.com/go-sql-driver/mysql"
 	"testing"
+        "github.com/jmoiron/sqlx"
 )
 
-func newUserForTest(t *testing.T) *User {
-	return NewUser(newDbForTest(t))
+func newUserForTest(t *testing.T) *User{
+    db, err := sqlx.Connect("mysql","root:*password_here@/punocracy")
+    if err != nil {
+        t.Errorf("database didnt connect. Error: %v", err)
+    }
+
+    return NewUser(db)
 }
 
+func TestDeleteUser(t *testing.T){
+    u := newUserForTest(t) 
+    rowToDelete := UserRow{ID: 10}
+    u.DeleteUser(nil,rowToDelete)
+}
+/*
 func TestUserCRUD(t *testing.T) {
 	u := newUserForTest(t)
 
