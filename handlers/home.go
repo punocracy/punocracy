@@ -33,31 +33,31 @@ func HandleRoot(w http.ResponseWriter, r *http.Request) {
 }
 
 // HandleNotFound shows a 404 page
-func HandleNotFound(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	sessionStore := r.Context().Value("sessionStore").(sessions.Store)
+// func HandleNotFound(w http.ResponseWriter, r *http.Request) {
+// 	w.Header().Set("Content-Type", "text/html")
+// 	sessionStore := r.Context().Value("sessionStore").(sessions.Store)
 
-	session, _ := sessionStore.Get(r, "punocracy-session")
-	currentUser, ok := session.Values["user"].(*models.UserRow)
+// 	session, _ := sessionStore.Get(r, "punocracy-session")
+// 	currentUser, ok := session.Values["user"].(*models.UserRow)
 
-	var isCurator bool
+// 	var isCurator bool
 
-	if !ok {
-		currentUser = nil
-		isCurator = false
-	} else {
-		isCurator = currentUser.PermLevel <= models.Curator
-	}
-	pageData := homePageData{CurrentUser: currentUser, IsCurator: isCurator, Words: nil, Phrases: nil}
+// 	if !ok {
+// 		currentUser = nil
+// 		isCurator = false
+// 	} else {
+// 		isCurator = currentUser.PermLevel <= models.Curator
+// 	}
+// 	pageData := homePageData{CurrentUser: currentUser, IsCurator: isCurator, Words: nil, Phrases: nil}
 
-	tmpl, err := template.ParseFiles("templates/dashboard-nosearch.html.tmpl", "templates/not-found.html.tmpl")
-	if err != nil {
-		libhttp.HandleErrorJson(w, err)
-		return
-	}
+// 	tmpl, err := template.ParseFiles("templates/dashboard-nosearch.html.tmpl", "templates/not-found.html.tmpl")
+// 	if err != nil {
+// 		libhttp.HandleErrorJson(w, err)
+// 		return
+// 	}
 
-	tmpl.Execute(w, pageData)
-}
+// 	tmpl.Execute(w, pageData)
+// }
 
 // GetHome generates the home page of the system
 func GetHome(w http.ResponseWriter, r *http.Request) {

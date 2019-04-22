@@ -88,7 +88,8 @@ func (app *Application) mux() *gorilla_mux.Router {
 
 	router := gorilla_mux.NewRouter()
 
-	router.NotFoundHandler = http.HandlerFunc(handlers.HandleNotFound)
+	// TODO: Implement PageNotFound Handler. I tried and it no work
+	// router.NotFoundHandler = http.HandlerFunc(handlers.HandleNotFound)
 
 	router.Handle("/now", http.HandlerFunc(handlers.GetHome)).Methods("GET")
 	router.Handle("/now", http.HandlerFunc(handlers.PostHome)).Methods("POST")
