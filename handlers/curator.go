@@ -53,7 +53,7 @@ func GetCurator(w http.ResponseWriter, r *http.Request) {
 
 	mongdb := r.Context().Value("mongodb").(*mongo.Database)
 	phrasesCollection := models.NewPhraseConnection(mongdb)
-	phrases, _ := models.GetPhraseListForCurators(5, phrasesCollection)
+	phrases, _ := models.GetPhraseListForCurators(5, currentUser, phrasesCollection)
 
 	pagePhrases := []curatePhrase{}
 
@@ -114,7 +114,7 @@ func PostCurator(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// TODO: Load more phrases from DB to put on the view
-	phrases, _ := models.GetPhraseListForCurators(5, phrasesCollection)
+	phrases, _ := models.GetPhraseListForCurators(5, currentUser, phrasesCollection)
 
 	pagePhrases := []curatePhrase{}
 
