@@ -57,7 +57,7 @@ func PostSubmit(w http.ResponseWriter, r *http.Request) {
 	phrasesCollection := models.NewPhraseConnection(mongdb)
 	word := models.NewWord(db)
 
-	err = models.InsertPhrase(phrase, *currentUser, word, phrasesCollection)
+	err := models.InsertPhrase(phrase, *currentUser, word, phrasesCollection)
 	if err != nil {
 		libhttp.HandleErrorJson(w, err)
 		return
