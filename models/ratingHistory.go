@@ -39,28 +39,30 @@ func NewUserRatingsConnection(db *mongo.Database) *mongo.Collection {
 }
 
 // AddRating adds a rating for a specific user
-func AddRating(user UserRow, rating int, ratedPhrase Phrase, ratingHistory *mongo.Collection) error {
+func AddRating(user UserRow, rating int, ratedPhrase Phrase, userRatings *mongo.Collection) error {
 	// Build UserRating document
 	ratingEntry := UserRating{PhraseID: ratedPhrase.PhraseID, RatingValue: rating, RateDate: time.Now()}
 
 	// Check if user has a rating history entry. If not, create user rating history
 	var userHist UserHistory
-	err := ratingHistory.FindOne(context.Background(), bson.M{"userID": user.ID}).Decode(&userHist)
+	err := userRatings.FindOne(context.Background(), bson.M{"userID": user.ID}).Decode(&userHist)
+
 	if err == mongo.ErrNoDocuments {
 		userHist.UserID = user.ID
-		_, err := ratingHistory.InsertOne(context.Background(), userHist)
+		userHist.RatingHistory = []UserRating{ratingEntry}
+		_, err := userRatings.InsertOne(context.Background(), userHist)
 		if err != nil {
 			return err
 		}
-	} else if err != nil {
-		return err
-	}
-
-	// Add document to the user's rating history
-	filterDoc := bson.M{"userID": user.ID}
-	updateDoc := bson.M{"$addToSet": bson.M{"ratingHistory": ratingEntry}}
-	_, err = ratingHistory.UpdateOne(context.Background(), filterDoc, updateDoc)
-	if err != nil {
+	} else if err == nil {
+		// Add document to the user's rating history
+		filterDoc := bson.M{"userID": user.ID}
+		updateDoc := bson.M{"$addToSet": bson.M{"ratingHistory": ratingEntry}}
+		_, err = userRatings.UpdateOne(context.Background(), filterDoc, updateDoc)
+		if err != nil {
+			return err
+		}
+	} else {
 		return err
 	}
 
@@ -69,17 +71,17 @@ func AddRating(user UserRow, rating int, ratedPhrase Phrase, ratingHistory *mong
 }
 
 // TODO: write ChangeRating function
-func ChangeRating(user UserRow, rating int, ratedPhrase Phrase, ratingHistory *mongo.Collection) error {
+func ChangeRating(user UserRow, rating int, ratedPhrase Phrase, userRatings *mongo.Collection) error {
 	return nil
 }
 
 // TODO: write DeleteRating function
-func DeleteRating(user UserRow, rating int, ratedPhrase Phrase, ratingHistory *mongo.Collection) error {
+func DeleteRating(user UserRow, rating int, ratedPhrase Phrase, userRatings *mongo.Collection) error {
 	return nil
 }
 
 // TODO: write GetRatingsByUserID function (sorted by date)
-func GetRatingsByUserID(user UserRow, ratingHistory *mongo.Collection) ([]UserRating, error) {
+func GetRatingsByUserID(user UserRow, userRatings *mongo.Collection) ([]UserRating, error) {
 	return nil, nil
 }
 
