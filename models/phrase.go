@@ -222,6 +222,11 @@ func RejectPhrase(phrase Phrase, reviewer UserRow, phrasesCollection *mongo.Coll
 	return nil
 }
 
+/*
+Keep track of reviewer assigned to phrases
+this helps to deal with condition that where curators leave page before reviewing everything.
+DO THAT
+*/
 // Retrieve phrases in review for curators up to a specified number
 func GetPhraseListForCurators(maxPhrases int64, phrasesCollection *mongo.Collection) ([]Phrase, error) {
 	// Build the query document
@@ -284,8 +289,28 @@ func DeleteByUserID(user UserRow, phrasesCollection *mongo.Collection) error {
 	return err
 }
 
+// TODO: slice of phrases, reset their flags
 // TODO: add function to anonymize by userID
+// Anonimize user data for phrases
+func AnonimizeUserData(user UserRow, userRatingsCollection *mongo.Collection) error {
+        //build query document
+	filter := bson.M{"submitterUserID": user.ID}
+        // Update all 
+        
+        //define anon user
+        //user 0
+        update := bson.M{"$set": bson.M{"submitterUserID": 0 }}
+        _, err = phrasesCollection.UpdateMany(context.Background(), filter, update)
+        if err != nil{
+                return err
+        }
+
+        return nil
+}
+
 // TODO: add function to get phrases by userID
+
+
 
 // Query for phrases from a list of words
 func GetPhraseList(wordList []WordRow, phrasesCollection *mongo.Collection) ([]Phrase, error) {
