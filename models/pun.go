@@ -12,22 +12,24 @@ func GeneratePuns(word string, homophoneWords []WordRow, phrases []Phrase) []str
 
 	for _, phrase := range phrases {
 		tokens := strings.Split(phrase.PhraseText, " ")
-		logrus.Infoln(tokens)
+		logrus.Infoln("Tokens", tokens)
 		text := []string{}
 
 		for _, token := range tokens {
 			for _, homophoneWord := range homophoneWords {
 				if strings.ToLower(token) == homophoneWord.Word {
 					text = append(text, word)
+					logrus.Infoln("Text Match", text)
 				} else {
 					text = append(text, token)
+					logrus.Infoln("Text No Match", text)
 				}
 			}
 		}
 		result := strings.Join(text, " ")
-		logrus.Infoln(result)
+		logrus.Infoln("Result", result)
 		puns = append(puns, result)
-		logrus.Infoln(puns)
+		logrus.Infoln("Puns", puns)
 	}
 
 	return puns
