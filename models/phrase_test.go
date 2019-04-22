@@ -15,7 +15,7 @@ import (
 // Connect to SQL database
 func newDBConnection() (*sqlx.DB, error) {
 	// DSN string
-	defaultDSN := strings.Replace("root:138713871387@tcp(localhost:3306)/punocracy?parseTime=true", "-", "_", -1)
+	defaultDSN := strings.Replace("root:*password*@tcp(localhost:3306)/punocracy?parseTime=true", "-", "_", -1)
 
 	// Connect to DB
 	db, err := sqlx.Connect("mysql", defaultDSN)
@@ -93,6 +93,75 @@ func TestGetPhraseList(t *testing.T) {
 	for _, p := range phraseList {
 		t.Log(p.String())
 	}
+}
+// Test GetPhraseListForCurators
+func TestGetPhraseListForCurators(t *testing.T){
+
+	// Connect to MongoDB with default URL string
+	mongoDB, err := connectToMongo("mongodb://localhost:27017")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Get the phrases collection from the cool_songs database
+	phrasesCollection := NewPhraseConnection(mongoDB)
+
+	// Connect to MySQL database
+	sqlDB, err := newDBConnection()
+	if err != nil {
+		t.Fatal(err)
+	}
+	wordInstance := NewWord(sqlDB)
+
+	// Example UserRow
+	testUser := newTestUser()
+
+	// Test cases
+	var testPhrases = []string{
+		"All your base are belong to us.",
+		"To live is to dream.",
+		"Live free or die hard.",
+		"This has no homophones in it.",
+	}
+	maxPhrases := 3
+
+	// Insert each phrase
+	for _, phrase := range testPhrases {
+		// Try to insert the phrase
+		err := InsertPhrase(phrase, testUser, wordInstance, phrasesCollection)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+        //testing the GetPhraseForCurators
+        //With the user that submitted being the reviewer
+	firstBatchPhrases, err := GetPhraseListForCurators(int64(maxPhrases), testUser, phrasesCollection)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Check length
+	if len(firstBatchPhrases) != maxPhrases {
+		t.Error("Got too many phrases! Expected", maxPhrases, "got", len(firstBatchPhrases))
+	}
+
+        //second batch and first batch must be the exact same
+	secondBatchPhrases, err := GetPhraseListForCurators(int64(maxPhrases), testUser, phrasesCollection)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Check length
+	if len(secondBatchPhrases) != maxPhrases {
+		t.Error("Got too many phrases! Expected", maxPhrases, "got", len(secondBatchPhrases))
+	}
+
+        //check if the batches have matching strings, not order may not be the same for both batches
+        for i,v := range firstBatchPhrases{
+            if (strings.Compare(v.PhraseText,secondBatchPhrases[i].PhraseText) != 0){
+                t.Error("Batches may not have matched, check order")
+            }
+        }
 }
 
 // Test GetNewPhraseListForCurators

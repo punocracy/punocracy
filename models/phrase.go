@@ -228,7 +228,42 @@ When curator deletes their account, a function is needed to anonimize their data
 */
 
 /*
-TODO:
+This function fully manages the curator phrases by:
+> Assigning curators to phrases
+> First collecting phrases already assigned to a curator before including new ones
+> returning that bundle of curator phrases
+> updates the database with the curator assignments
+input:  maxPhrases (amount of phrases to generate)
+        curatingUser (curator UserRow)
+        phrasesCollection (the mongo collection to work with)
+ouput:  Phrase slice and error
+        
+*/
+func GetPhraseListForCurators(maxPhrases int64, curatingUser UserRow ,phrasesCollection *mongo.Collection) ([]Phrase, error) {
+        //get up to maxPhrases in review phrases
+        inReviewPhrases ,err := GetInReviewPhraseList(maxPhrases, curatingUser, phrasesCollection)
+	if err != nil {
+		return nil, err
+	}
+
+        //get the rest of the phrases from "new" phrases
+        if int64(len(inReviewPhrases)) < maxPhrases{
+                newPhrases , err2 := GetNewPhraseListForCurators((maxPhrases - int64(len(inReviewPhrases))), curatingUser, phrasesCollection)
+
+                if err2 != nil {
+                        return nil, err2
+                }
+                //append inreview phrases and new phrases
+                allPhrases := append(inReviewPhrases, newPhrases...)
+                return allPhrases, nil
+        } else {
+
+                return inReviewPhrases, nil
+        }
+
+}
+
+/*
 This function will retireve phrases that are in review by a curator up to maxPhrases
 */
 func GetInReviewPhraseList(maxPhrases int64, curatingUser UserRow ,phrasesCollection *mongo.Collection) ([]Phrase, error) {
