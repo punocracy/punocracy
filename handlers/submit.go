@@ -51,7 +51,7 @@ func PostSubmit(w http.ResponseWriter, r *http.Request) {
 
 	db := r.Context().Value("db").(*sqlx.DB)
 
-	mongdb := r.Context().Value("mongdb").(*mongo.Database)
+	mongdb := r.Context().Value("mongodb").(*mongo.Database)
 	phrase := r.FormValue("phraseText")
 
 	phrasesCollection := models.NewPhraseConnection(mongdb)
