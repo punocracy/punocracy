@@ -3,6 +3,7 @@ package handlers
 import (
 	"html/template"
 	"net/http"
+	"strings"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/alvarosness/punocracy/libhttp"
@@ -123,7 +124,7 @@ func PostHome(w http.ResponseWriter, r *http.Request) {
 	var noPhrases bool
 	var noWords bool
 
-	words, wordErr := wordTable.QueryHlistString(nil, queryWord)
+	words, wordErr := wordTable.QueryHlistString(nil, strings.ToLower(queryWord))
 
 	if wordErr != nil {
 		noWords = true
