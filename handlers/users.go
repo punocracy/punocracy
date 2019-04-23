@@ -98,7 +98,7 @@ func PostLogin(w http.ResponseWriter, r *http.Request) {
 	user, err := u.GetUserByUsernameAndPassword(nil, username, password)
 	if err != nil {
 		logrus.Errorln(err.Error())
-		http.Redirect(w, r, "login/", http.StatusFound)
+		http.Redirect(w, r, "/login", http.StatusFound)
 	}
 
 	session, _ := sessionStore.Get(r, "punocracy-session")
