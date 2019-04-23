@@ -244,39 +244,39 @@ input:  maxPhrases (amount of phrases to generate)
         curatingUser (curator UserRow)
         phrasesCollection (the mongo collection to work with)
 ouput:  Phrase slice and error
-        
+
 */
-func GetPhraseListForCurators(maxPhrases int64, curatingUser UserRow ,phrasesCollection *mongo.Collection) ([]Phrase, error) {
-        //get up to maxPhrases in review phrases
-        inReviewPhrases ,err := GetInReviewPhraseList(maxPhrases, curatingUser, phrasesCollection)
+func GetPhraseListForCurators(maxPhrases int64, curatingUser UserRow, phrasesCollection *mongo.Collection) ([]Phrase, error) {
+	//get up to maxPhrases in review phrases
+	inReviewPhrases, err := GetInReviewPhraseList(maxPhrases, curatingUser, phrasesCollection)
 	if err != nil {
 		return nil, err
 	}
 
-        //get the rest of the phrases from "new" phrases
-        if int64(len(inReviewPhrases)) < maxPhrases{
-                newPhrases , err2 := GetNewPhraseListForCurators((maxPhrases - int64(len(inReviewPhrases))), curatingUser, phrasesCollection)
+	//get the rest of the phrases from "new" phrases
+	if int64(len(inReviewPhrases)) < maxPhrases {
+		newPhrases, err2 := GetNewPhraseListForCurators((maxPhrases - int64(len(inReviewPhrases))), curatingUser, phrasesCollection)
 
-                if err2 != nil {
-                        return nil, err2
-                }
-                //append inreview phrases and new phrases
-                allPhrases := append(inReviewPhrases, newPhrases...)
-                return allPhrases, nil
-        } else {
+		if err2 != nil {
+			return nil, err2
+		}
+		//append inreview phrases and new phrases
+		allPhrases := append(inReviewPhrases, newPhrases...)
+		return allPhrases, nil
+	} else {
 
-                return inReviewPhrases, nil
-        }
+		return inReviewPhrases, nil
+	}
 
 }
 
 /*
 This function will retireve phrases that are in review by a curator up to maxPhrases
 */
-func GetInReviewPhraseList(maxPhrases int64, curatingUser UserRow ,phrasesCollection *mongo.Collection) ([]Phrase, error) {
+func GetInReviewPhraseList(maxPhrases int64, curatingUser UserRow, phrasesCollection *mongo.Collection) ([]Phrase, error) {
 
 	// Build the query document
-        queryDocument := bson.M{"displayValue": InReview,"reviewedBy": curatingUser.ID}
+	queryDocument := bson.M{"displayValue": InReview, "reviewedBy": curatingUser.ID}
 	queryOptions := &options.FindOptions{Limit: &maxPhrases}
 
 	// Get a cursor pointing to the list of phrases as a result of the query
@@ -314,6 +314,7 @@ func GetInReviewPhraseList(maxPhrases int64, curatingUser UserRow ,phrasesCollec
 	// Return the result
 	return phraseList, nil
 }
+
 /*
 TODO:
 
@@ -330,7 +331,7 @@ Plan is to change this to a helper function to a new overall GetPhraseListForCur
 that will first query for exsisting curator assigned phrases then append the results of this function.
 */
 // Retrieve phrases in review for curators up to a specified number
-func GetNewPhraseListForCurators(maxPhrases int64, curatingUser UserRow ,phrasesCollection *mongo.Collection) ([]Phrase, error) {
+func GetNewPhraseListForCurators(maxPhrases int64, curatingUser UserRow, phrasesCollection *mongo.Collection) ([]Phrase, error) {
 	// Build the query document
 	queryDocument := bson.M{"displayValue": Unreviewed}
 	queryOptions := &options.FindOptions{Limit: &maxPhrases}
@@ -356,10 +357,10 @@ func GetNewPhraseListForCurators(maxPhrases int64, curatingUser UserRow ,phrases
 			return nil, err
 		}
 
-                //BEFORE APPENDING: edit these results then update them in the DB
+		//BEFORE APPENDING: edit these results then update them in the DB
 		// Append result to phraseList and append ObjectID
-                onePhrase.ReviewedBy = curatingUser.ID
-                onePhrase.DisplayPublic = InReview
+		onePhrase.ReviewedBy = curatingUser.ID
+		onePhrase.DisplayPublic = InReview
 		phraseList = append(phraseList, onePhrase)
 		phraseObjectIDs = append(phraseObjectIDs, onePhrase.PhraseID)
 	}
@@ -369,21 +370,20 @@ func GetNewPhraseListForCurators(maxPhrases int64, curatingUser UserRow ,phrases
 		return nil, err
 	}
 
-        if len(phraseList) != 0{
-            // Set phrases to be in review
-            // and assigned to curator
-            filter := bson.M{"_id": bson.M{"$in": phraseObjectIDs}}
-            update := bson.M{"$set": bson.M{ "reviewedBy": curatingUser.ID, "displayValue": InReview}}
-            _, err = phrasesCollection.UpdateMany(context.Background(), filter, update)
-            if err != nil {
-                    return nil, err
-            }
+	if len(phraseList) != 0 {
+		// Set phrases to be in review
+		// and assigned to curator
+		filter := bson.M{"_id": bson.M{"$in": phraseObjectIDs}}
+		update := bson.M{"$set": bson.M{"reviewedBy": curatingUser.ID, "displayValue": InReview}}
+		_, err = phrasesCollection.UpdateMany(context.Background(), filter, update)
+		if err != nil {
+			return nil, err
+		}
 
-            // Sort the phrases
-            sortPhrases(phraseList)
+		// Sort the phrases
+		sortPhrases(phraseList)
 
-        }
-
+	}
 
 	// Return the result
 	return phraseList, nil
@@ -403,23 +403,21 @@ func DeleteByUserID(user UserRow, phrasesCollection *mongo.Collection) error {
 // TODO: add function to anonymize by userID
 // Anonimize user data for phrases
 func AnonimizeUserData(user UserRow, phrasesCollection *mongo.Collection) error {
-        //build query document
+	//build query document
 	filter := bson.M{"submitterUserID": user.ID}
-        // Update all 
-        //define anon user
-        //user 0 Should be const?
-        update := bson.M{"$set": bson.M{"submitterUserID": 0 }}
-        _, err := phrasesCollection.UpdateMany(context.Background(), filter, update)
-        if err != nil{
-                return err
-        }
+	// Update all
+	//define anon user
+	//user 0 Should be const?
+	update := bson.M{"$set": bson.M{"submitterUserID": 0}}
+	_, err := phrasesCollection.UpdateMany(context.Background(), filter, update)
+	if err != nil {
+		return err
+	}
 
-        return nil
+	return nil
 }
 
 // TODO: add function to get phrases by userID
-
-
 
 // Query for phrases from a list of words
 func GetPhraseList(wordList []WordRow, phrasesCollection *mongo.Collection) ([]Phrase, error) {
@@ -483,6 +481,43 @@ func sortPhrases(phraseList []Phrase) {
 	for i := range phrs {
 		phraseList[i] = phrs[i].phrase
 	}
+}
+
+// GetPhraseHistory for phrases from a list of words
+func GetPhraseHistory(user UserRow, phrasesCollection *mongo.Collection) ([]Phrase, error) {
+	// Build the query document
+	queryDocument := bson.M{"submitterUserID": user.ID}
+
+	// Get a cursor pointing to the list of phrases as a result of the query
+	cur, err := phrasesCollection.Find(context.Background(), queryDocument)
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(context.Background())
+
+	// list of phrases
+	var phraseList []Phrase
+
+	// get query result and print
+	for cur.Next(context.Background()) {
+		// Decode into struct
+		var onePhrase Phrase
+		//var onePhrase bson.d
+		err = cur.Decode(&onePhrase)
+		if err != nil {
+			return nil, err
+		}
+		// append to phraseList
+		phraseList = append(phraseList, onePhrase)
+	}
+
+	// check for cursor errors
+	if err := cur.Err(); err != nil {
+		return nil, err
+	}
+
+	// return the result
+	return phraseList, nil
 }
 
 // Get average rating from rating struct

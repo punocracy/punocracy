@@ -4,9 +4,11 @@ import (
 	"html/template"
 	"net/http"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/alvarosness/punocracy/libhttp"
 	"github.com/alvarosness/punocracy/models"
 	"github.com/gorilla/sessions"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type historyPageData struct {
@@ -34,7 +36,22 @@ func GetHistory(w http.ResponseWriter, r *http.Request) {
 		isCurator = currentUser.PermLevel <= models.Curator
 	}
 
-	pageData := historyPageData{CurrentUser: currentUser, IsCurator: isCurator, RatedPhrases: nil, SubmittedPhrases: nil}
+	// Getting submitted phrases
+	mongdb := r.Context().Value("mongodb").(*mongo.Database)
+	phrasesCollection := models.NewPhraseConnection(mongdb)
+
+	phrases, err := models.GetPhraseHistory(*currentUser, phrasesCollection)
+	if err != nil {
+		logrus.Error(err.Error())
+	}
+
+	submittedPhrases := []string{}
+
+	for _, phrase := range phrases {
+		submittedPhrases = append(submittedPhrases, phrase.PhraseText)
+	}
+
+	pageData := historyPageData{CurrentUser: currentUser, IsCurator: isCurator, RatedPhrases: nil, SubmittedPhrases: submittedPhrases}
 
 	tmpl, err := template.ParseFiles("templates/dashboard-nosearch.html.tmpl", "templates/history.html.tmpl")
 	if err != nil {
