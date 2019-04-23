@@ -143,12 +143,12 @@ func (u *User) Signup(tx *sqlx.Tx, username, email, password, passwordAgain stri
 	return u.userRowFromSQLResult(tx, sqlResult)
 }
 
-// UpdateEmailAndPasswordByID updates user email and password.
-func (u *User) UpdateEmailAndPasswordByID(tx *sqlx.Tx, userID int64, email, password, passwordAgain string) (*UserRow, error) {
+// UpdateUsernameAndPasswordByID updates user email and password.
+func (u *User) UpdateUsernameAndPasswordByID(tx *sqlx.Tx, userID int64, username, password, passwordAgain string) (*UserRow, error) {
 	data := make(map[string]interface{})
 
-	if email != "" {
-		data["email"] = email
+	if username != "" {
+		data["username"] = username
 	}
 
 	if password != "" && passwordAgain != "" && password == passwordAgain {
@@ -157,7 +157,7 @@ func (u *User) UpdateEmailAndPasswordByID(tx *sqlx.Tx, userID int64, email, pass
 			return nil, err
 		}
 
-		data["password"] = hashedPassword
+		data["passwordHash"] = hashedPassword
 	}
 
 	if len(data) > 0 {

@@ -160,13 +160,12 @@ func PutUsersID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	email := r.FormValue("Email")
 	password := r.FormValue("Password")
 	passwordAgain := r.FormValue("PasswordAgain")
 
 	u := models.NewUser(db)
 
-	currentUser, err = u.UpdateEmailAndPasswordByID(nil, currentUser.ID, email, password, passwordAgain)
+	currentUser, err = u.UpdateUsernameAndPasswordByID(nil, currentUser.ID, currentUser.Username, password, passwordAgain)
 	if err != nil {
 		libhttp.HandleErrorJson(w, err)
 		return
