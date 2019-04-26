@@ -43,11 +43,17 @@ func NewUserRatingsConnection(db *mongo.Database) *mongo.Collection {
 	return db.Collection("userRatings")
 }
 
+// Get a phrase by ID
+func getPhraseByID(phraseID primitive.ObjectID, phrasesCollection *mongo.Collection) (Phrase, error) {
+	var returnPhrase Phrase
+	err := phrasesCollection.FindOne(context.Background(), bson.M{"phraseID": phraseID}).Decode(&returnPhrase)
+	return returnPhrase, err
+}
+
 // Check if a phrase exists in the phrases collection
 func checkIfPhraseExists(p Phrase, phrasesCollection *mongo.Collection) (bool, error) {
 	// Check if the phrase exists in the phrases collection
-	var throwawayPhrase Phrase
-	err := phrasesCollection.FindOne(context.Background(), bson.M{"_id": p.PhraseID}).Decode(&throwawayPhrase)
+	_, err := getPhraseByID(p.PhraseID, phrasesCollection)
 	if err == mongo.ErrNoDocuments {
 		return false, nil
 	} else if err != nil {
