@@ -86,9 +86,40 @@ func TestAddRemoveRatingToPhrase(t *testing.T) {
 	testUser := newTestUser()
 	testPhrase := newTestPhrase(testUser)
 
-	// Insert into the phrases collection. AddRating should work
+	// Insert into the phrases collection.
 	_, err = phrasesCollection.InsertOne(context.Background(), testPhrase)
 	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Add rating to the phrase
+	err = addRatingToPhrase(testPhrase, 5, phrasesCollection)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Check the phrase
+	testPhrase, err = getPhraseByID(testPhrase.PhraseID, phrasesCollection)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if testPhrase.PhraseRatings.FiveStar != 1 {
+		t.Error("Phrase rating not changed when added!")
+	}
+
+	// Remove the rating and test if ErrNegativeRatings works
+	err = removeRatingFromPhrase(testPhrase, 4, phrasesCollection)
+	if err == nil {
+		t.Error("Rating remove successfully when it wasn't. Shouldn't be any ratings")
+	} else if err != ErrNegativeRatings {
+		t.Fatal(err)
+	}
+
+	// Remove the 5 star rating
+	err = removeRatingFromPhrase(testPhrase, 5, phrasesCollection)
+	if err == ErrNegativeRatings {
+		t.Error("Rating was not successfully removed when it should have been.")
+	} else if err != nil {
 		t.Fatal(err)
 	}
 
