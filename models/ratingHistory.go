@@ -90,6 +90,11 @@ func changeRating(user UserRow, rating int, thePhrase Phrase, phrases *mongo.Col
 		return err
 	}
 
+	// Check if the ratings are the same and then do nothing
+	if oldRating.RatingValue == rating {
+		return nil
+	}
+
 	// Update the userRatings entry
 	filterDoc := bson.M{"userID": user.ID, "phraseID": thePhrase.PhraseID}
 	updateDoc := bson.M{"$set": bson.M{"ratingValue": rating, "rateDate": time.Now()}}

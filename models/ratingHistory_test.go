@@ -140,7 +140,23 @@ func TestAddOrChangeRating(t *testing.T) {
 		t.Fatal(err)
 	}
 	if checkPhrase.PhraseRatings.FiveStar != 0 && checkPhrase.PhraseRatings.FourStar != 1 {
-		t.Error("Five star rating not stored. PhraseID:", testPhrase.PhraseID)
+		t.Error("Four star rating not stored. PhraseID:", testPhrase.PhraseID)
+	}
+
+	// Change the rating to the same thing
+	err = AddOrChangeRating(testUser, 4, testPhrase, phrases, userRatings)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Check the rating value in the phrase
+	err = phrases.FindOne(context.Background(), bson.M{"_id": testPhrase.PhraseID}).Decode(&checkPhrase)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if checkPhrase.PhraseRatings.FourStar != 1 {
+		t.Error("Four star rating stored erroneously! star rating not stored. PhraseID:", testPhrase.PhraseID)
+		t.Log(checkPhrase)
 	}
 }
 
