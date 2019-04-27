@@ -41,6 +41,34 @@ func NewUserRatingsConnection(db *mongo.Database) *mongo.Collection {
 	return db.Collection("userRatings")
 }
 
+// GetRatingsByUserID function returns a date-sorted list of user ratings
+func GetRatingsByUserID(user UserRow, userRatings *mongo.Collection) ([]UserRating, error) {
+	// Query options to have a date-sorted list
+	sortOptions := options.Find().SetSort(bson.M{"rateDate": -1})
+
+	// Query for sorted
+	cur, err := userRatings.Find(context.Background(), bson.M{"userID": user.ID}, sortOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	// Load into array
+	var ratingHistArray []UserRating
+	for cur.Next() {
+		// Decode cursor value
+		var thisRating UserRating
+		err = cur.Decode(&thisRating)
+		if err != nil {
+			return nil, err
+		}
+
+		// Append to history
+		ratingHistArray = append(ratingHistArray, thisRating)
+	}
+
+	return ratingHistArray, nil
+}
+
 // AddOrChangeRating adds or modifies a rating value given a user, phrase, and rating value
 func AddOrChangeRating(user UserRow, rating int, thePhrase Phrase, phrases *mongo.Collection, userRatings *mongo.Collection) error {
 	// Attempt to change the rating, and if an ErrNoDocuments error is encountered, add it afresh
@@ -118,15 +146,6 @@ func getRating(user UserRow, thePhrase Phrase, userRatings *mongo.Collection) (U
 func DeleteRating(user UserRow, rating int, ratedPhrase Phrase, userRatings *mongo.Collection) error {
 	return nil
 }
-
-// TODO: write GetRatingsByUserID function (sorted by date)
-func GetRatingsByUserID(user UserRow, userRatings *mongo.Collection) ([]UserRating, error) {
-	return nil, nil
-}
-
-// TODO: write DeleteUserRatings function
-// TODO: write updateRatingByUser to update the rating in the phrases collection
-// NOTE: Make everything propagate to the phrases table
 
 // changeRatingForPhrases changes a rating in the phrases collection.
 func changeRatingForPhrase(thePhrase Phrase, oldRating int, newRating int, phrases *mongo.Collection) error {
