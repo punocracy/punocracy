@@ -84,6 +84,66 @@ func TestCheckIfPhraseExists(t *testing.T) {
 	}
 }
 
+// Test AddOrChangeRating function
+func TestAddOrChangeRating(t *testing.T) {
+	// Connect to MongoDB and get phrases and userRatings collections
+	mongoDB, err := connectToMongo("mongodb://localhost:27017")
+	if err != nil {
+		t.Fatal(err)
+	}
+	phrases := newTestPhraseConnection(mongoDB)
+	userRatings := newTestUserRatingsConnection(mongoDB)
+
+	// Insert test phrase into collection
+	testUser := newTestUser()
+	testPhrase := newTestPhrase(testUser)
+	_, err = phrases.InsertOne(context.Background(), testPhrase)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Add a rating from testUser
+	err = AddOrChangeRating(testUser, 5, testPhrase, phrases, userRatings)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Check the rating value in the userRatings collection
+	var checkRating UserRating
+	err = userRatings.FindOne(context.Background(), bson.M{"userID": testUser.ID, "phraseID": testPhrase.PhraseID}).Decode(&checkRating)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if checkRating.RatingValue != 5 {
+		t.Error("Rating not logged correctly. RatingID", checkRating.ratingID)
+	}
+
+	// Check the rating value in the phrase
+	var checkPhrase Phrase
+	err = phrases.FindOne(context.Background(), bson.M{"_id": testPhrase.PhraseID}).Decode(&checkPhrase)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if checkPhrase.PhraseRatings.FiveStar != 1 {
+		t.Error("Five star rating not stored. PhraseID:", testPhrase.PhraseID)
+	}
+
+	// Change the rating
+	err = AddOrChangeRating(testUser, 4, testPhrase, phrases, userRatings)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Check the rating value in the phrase
+	err = phrases.FindOne(context.Background(), bson.M{"_id": testPhrase.PhraseID}).Decode(&checkPhrase)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if checkPhrase.PhraseRatings.FiveStar != 0 && checkPhrase.PhraseRatings.FourStar != 1 {
+		t.Error("Five star rating not stored. PhraseID:", testPhrase.PhraseID)
+	}
+}
+
 // Test addRatingToPhrase and removeRatingFromPhrase functions
 func TestAddRemoveRatingToPhrase(t *testing.T) {
 	// Connect to MongoDB and get phrases collection

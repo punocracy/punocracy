@@ -72,7 +72,7 @@ func addRating(user UserRow, rating int, thePhrase Phrase, phrases *mongo.Collec
 	}
 
 	// Insert the rating into the userRatings collection
-	_, err = phrases.InsertOne(context.Background(), ratingEntry)
+	_, err = userRatings.InsertOne(context.Background(), ratingEntry)
 	if err != nil {
 		return err
 	}
