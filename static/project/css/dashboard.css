@@ -7,7 +7,7 @@
 }
 
 .rating-selection {
-    background-image: url(http://i.imgur.com/lXzJ1eB.png);
+    background-color: red;
 }
 
 .rating input:active+.rating-selection {
