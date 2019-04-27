@@ -92,7 +92,7 @@ func (p Phrase) String() string {
 // Type for sorting phrases.
 type phraseSorter struct {
 	phrase    Phrase
-	avgRating float32
+	avgRating float64
 }
 
 // Type for sorting a list of phrases. Implements sort.Interface

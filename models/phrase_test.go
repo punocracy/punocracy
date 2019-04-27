@@ -314,12 +314,12 @@ func TestAverageRating(t *testing.T) {
 	// List of ratings
 	tests := []struct {
 		input    Rating
-		expected float32
+		expected float64
 	}{
-		{Rating{0, 0, 0, 4, 0}, float32(4)},
-		{Rating{0, 0, 0, 0, 0}, float32(0)},
+		{Rating{0, 0, 0, 4, 0}, float64(4)},
+		{Rating{0, 0, 0, 0, 0}, float64(0)},
 		{Rating{0, 0, 0, 2, 2}, 4.5},
-		{Rating{1, 2, 5, 2, 1}, float32(3)},
+		{Rating{1, 2, 5, 2, 1}, float64(3)},
 	}
 
 	// Test
