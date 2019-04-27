@@ -20,7 +20,13 @@ type homePageData struct {
 	CurrentUser *models.UserRow
 	IsCurator   bool
 	Words       []string
-	Phrases     []models.Phrase
+	Phrases     []phraseDisplay
+}
+
+type phraseDisplay struct {
+	PhraseText          string
+	Author              string
+	TimeSinceSubmission string
 }
 
 type resultPageData struct {
@@ -88,9 +94,7 @@ func GetHome(w http.ResponseWriter, r *http.Request) {
 
 	words, _ := wordTable.RandWordsList(nil, 5)
 
-	phraseList := []models.Phrase{}
-
-	phraseList = append(phraseList, models.Phrase{
+	samplephrase := models.Phrase{
 		PhraseID:        primitive.NewObjectID(),
 		SubmitterUserID: 1,
 		SubmissionDate:  time.Now(),
@@ -100,6 +104,14 @@ func GetHome(w http.ResponseWriter, r *http.Request) {
 		ReviewDate:      time.Now(),
 		PhraseText:      "This is a test",
 		DisplayPublic:   models.Accepted,
+	}
+
+	phraseList := []phraseDisplay{}
+
+	phraseList = append(phraseList, phraseDisplay{
+		PhraseText:          samplephrase.PhraseText,
+		Author:              "James",
+		TimeSinceSubmission: "12 days",
 	})
 
 	pageData := homePageData{CurrentUser: currentUser, IsCurator: isCurator, Words: words, Phrases: phraseList}

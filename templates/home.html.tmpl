@@ -24,7 +24,7 @@
       {{if .Phrases}}
       {{range .Phrases}}
       <div class="list-group-item">
-        <h5 class="mb-1">{{.}}</h5>
+        <h5 class="mb-1">{{.PhraseText}}</h5>
         <div>
           <img src="star.svg" alt="">
           <img src="star.svg" alt="">
@@ -33,8 +33,8 @@
           <img src="star.svg" alt="">
         </div>
         <div class="d-flex justify-content-between">
-          <p class="mb-1"><a href="#">Anon</a></p>
-          <small>30 days ago</small>
+          <p class="mb-1"><a href="#">{{.Author}}</a></p>
+          <small>{{.TimeSinceSubmission}}</small>
         </div>
       </div>
       {{end}}
