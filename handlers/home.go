@@ -124,11 +124,11 @@ func GetHome(w http.ResponseWriter, r *http.Request) {
 		PhraseText:          samplephrase.PhraseText,
 		Author:              sampleUser.Username,
 		TimeSinceSubmission: sampleTime.String(),
-		IsOneStar:           avgRating == 1,
-		IsTwoStar:           avgRating == 2,
-		IsThreeStar:         avgRating == 3,
-		IsFourStar:          avgRating == 4,
-		IsFiveStar:          avgRating == 5,
+		IsOneStar:           avgRating >= 1,
+		IsTwoStar:           avgRating >= 2,
+		IsThreeStar:         avgRating >= 3,
+		IsFourStar:          avgRating >= 4,
+		IsFiveStar:          avgRating >= 5,
 	})
 
 	pageData := homePageData{CurrentUser: currentUser, IsCurator: isCurator, Words: words, Phrases: phraseList}
