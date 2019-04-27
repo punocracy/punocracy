@@ -26,7 +26,7 @@ func newTestPhrase(testUser UserRow) Phrase {
 
 // Delete a phrase from the phrases collection
 func deletePhraseFromPhrases(p Phrase, phrasesCollection *mongo.Collection) error {
-	_, err := phrasesCollection.DeleteOne(context.Background(), bson.M{"phraseID": p.PhraseID})
+	_, err := phrasesCollection.DeleteOne(context.Background(), bson.M{"_id": p.PhraseID})
 	return err
 }
 
@@ -74,7 +74,7 @@ func TestCheckIfPhraseExists(t *testing.T) {
 		t.Fatal(err)
 	}
 	if result == false {
-		t.Error("Failed test. Expected phrase to be present in collection.")
+		t.Error("Result:", result, "expected: true. Expected phrase to be present in collection with ID: ", testPhrase.PhraseID)
 	}
 
 	// Delete phrase
