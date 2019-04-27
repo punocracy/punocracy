@@ -27,17 +27,29 @@
       {{range .Phrases}}
       <div class="list-group-item">
         <h5 class="mb-1">{{.PhraseText}}</h5>
+        <div class="rate">
+          <input type="radio" checked id="star5" name="rate" value="5" />
+          <label for="star5" title="text">5 stars</label>
+          <input type="radio" id="star4" name="rate" value="4" />
+          <label for="star4" title="text">4 stars</label>
+          <input type="radio" id="star3" name="rate" value="3" />
+          <label for="star3" title="text">3 stars</label>
+          <input type="radio" id="star2" name="rate" value="2" />
+          <label for="star2" title="text">2 stars</label>
+          <input type="radio" id="star1" name="rate" value="1" />
+          <label for="star1" title="text">1 star</label>
+        </div>
         <div>
           <div class="rating">
-            <input type="radio" id="star5" name="rate" value="5" {{if .IsFiveStar}}checked{{end}}/>
+            <input type="radio" id="star5" name="rate" value="5" {{if .IsFiveStar}}checked{{end}} />
             <label class="rating-selection" for="star5"></label>
-            <input type="radio" id="star4" name="rate" value="4" {{if .IsFourStar}}checked{{end}}/>
+            <input type="radio" id="star4" name="rate" value="4" {{if .IsFourStar}}checked{{end}} />
             <label class="rating-selection" for="star4"></label>
-            <input type="radio" id="star3" name="rate" value="3" {{if .IsThreeStar}}checked{{end}}/>
+            <input type="radio" id="star3" name="rate" value="3" {{if .IsThreeStar}}checked{{end}} />
             <label class="rating-selection" for="star3"></label>
-            <input type="radio" id="star2" name="rate" value="2" {{if .IsTwoStar}}checked{{end}}/>
+            <input type="radio" id="star2" name="rate" value="2" {{if .IsTwoStar}}checked{{end}} />
             <label class="rating-selection" for="star2"></label>
-            <input type="radio" id="star1" name="rate" value="1" {{if .IsOneStar}}checked{{end}}/>
+            <input type="radio" id="star1" name="rate" value="1" {{if .IsOneStar}}checked{{end}} />
             <label class="rating-selection" for="star1"></label>
           </div>
         </div>
