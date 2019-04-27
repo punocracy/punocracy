@@ -1,5 +1,6 @@
-.modal-dialog {
-    z-index: 1100;
+*{
+    margin: 0;
+    padding: 0;
 }
 
 .rate {
@@ -38,4 +39,7 @@
     color: #c59b08;
 }
 
+.modal-dialog {
+    z-index: 1100;
+}
 /* Modified from: https://github.com/mukulkant/Star-rating-using-pure-css */
