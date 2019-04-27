@@ -64,5 +64,5 @@ func GetHistory(w http.ResponseWriter, r *http.Request) {
 
 // PostHistory handles the update of user ratings for phrases
 func PostHistory(w http.ResponseWriter, r *http.Request) {
-
+	logrus.Infoln("this is supposed to update the rating a user gave to a phrase")
 }

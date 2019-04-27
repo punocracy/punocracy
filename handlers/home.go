@@ -117,7 +117,6 @@ func PostHome(w http.ResponseWriter, r *http.Request) {
 
 	queryWord := r.FormValue("queryWord")
 
-	// TODO: Query DB for words in the same word group
 	db := r.Context().Value("db").(*sqlx.DB)
 	wordTable := models.NewWord(db)
 
@@ -130,7 +129,6 @@ func PostHome(w http.ResponseWriter, r *http.Request) {
 		noWords = true
 	}
 
-	// TODO: Query DB for phrases
 	mongdb := r.Context().Value("mongodb").(*mongo.Database)
 	phrasesCollection := models.NewPhraseConnection(mongdb)
 	phrases, phraseErr := models.GetPhraseList(words, phrasesCollection)
@@ -143,7 +141,6 @@ func PostHome(w http.ResponseWriter, r *http.Request) {
 		noPhrases = true
 	}
 
-	// TODO: perform word replacement
 	puns := models.GeneratePuns(queryWord, words, phrases)
 	pageData := resultPageData{CurrentUser: currentUser, QueryWord: queryWord, IsCurator: isCurator, NoPhrases: noPhrases, NoWords: noWords, Puns: puns, Phrases: phrases}
 
@@ -154,4 +151,9 @@ func PostHome(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tmpl.Execute(w, pageData)
+}
+
+// PutHome handles whenever a user rates phrases
+func PutHome(w http.ResponseWriter, r *http.Request) {
+	logrus.Infoln("not implemented yet")
 }
