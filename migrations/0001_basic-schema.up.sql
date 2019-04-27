@@ -1,8 +1,4 @@
-SET SESSION time_zone = "US/Eastern";
 ALTER DATABASE CHARACTER SET "utf8";
-
-CREATE DATABASE IF NOT EXISTS punocracy;
-USE punocracy;
 
 DROP TABLE IF EXISTS Permissions_T;
 CREATE TABLE Permissions_T(
@@ -10,8 +6,6 @@ CREATE TABLE Permissions_T(
     permDescription VARCHAR(30),
 
     CONSTRAINT Permissions_PK PRIMARY KEY (permLevel)
-    ON DELETE SET NULL
-    ON UPDATE CASCADE
 );
 
 DROP TABLE IF EXISTS Users_T;
@@ -24,6 +18,8 @@ CREATE TABLE Users_T(
 
     CONSTRAINT Users_PK PRIMARY KEY (userID),
     CONSTRAINT Users_FK FOREIGN KEY (permLevel) REFERENCES Permissions_T(permLevel)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
 );
 
 DROP TABLE IF EXISTS Words_T;

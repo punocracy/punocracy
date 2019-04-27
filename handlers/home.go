@@ -4,6 +4,9 @@ import (
 	"html/template"
 	"net/http"
 	"strings"
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/alvarosness/punocracy/libhttp"
@@ -17,7 +20,7 @@ type homePageData struct {
 	CurrentUser *models.UserRow
 	IsCurator   bool
 	Words       []string
-	Phrases     []string
+	Phrases     []models.Phrase
 }
 
 type resultPageData struct {
@@ -85,7 +88,21 @@ func GetHome(w http.ResponseWriter, r *http.Request) {
 
 	words, _ := wordTable.RandWordsList(nil, 5)
 
-	pageData := homePageData{CurrentUser: currentUser, IsCurator: isCurator, Words: words, Phrases: nil}
+	phraseList := []models.Phrase{}
+
+	phraseList = append(phraseList, models.Phrase{
+		PhraseID:        primitive.NewObjectID(),
+		SubmitterUserID: 1,
+		SubmissionDate:  time.Now(),
+		PhraseRatings:   models.Rating{OneStar: 1, TwoStar: 2, ThreeStar: 3, FourStar: 0, FiveStar: 0},
+		WordList:        []int{},
+		ReviewedBy:      1,
+		ReviewDate:      time.Now(),
+		PhraseText:      "This is a test",
+		DisplayPublic:   models.Accepted,
+	})
+
+	pageData := homePageData{CurrentUser: currentUser, IsCurator: isCurator, Words: words, Phrases: phraseList}
 
 	tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/search.html.tmpl", "templates/home.html.tmpl")
 	if err != nil {
