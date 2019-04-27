@@ -15,7 +15,7 @@ import (
 // Connect to SQL database
 func newDBConnection() (*sqlx.DB, error) {
 	// DSN string
-	defaultDSN := strings.Replace("root:*password*@tcp(localhost:3306)/punocracy?parseTime=true", "-", "_", -1)
+	defaultDSN := strings.Replace("nathaniel:nathaniel@tcp(localhost:3306)/punocracy?parseTime=true", "-", "_", -1)
 
 	// Connect to DB
 	db, err := sqlx.Connect("mysql", defaultDSN)
@@ -74,7 +74,7 @@ func TestGetPhraseList(t *testing.T) {
 	}
 
 	// Get the phrases collection from the cool_songs database
-	phrasesCollection := NewPhraseConnection(mongoDB)
+	phrasesCollection := newTestPhraseConnection(mongoDB)
 
 	// List of words to search for
 	wordList := []WordRow{
@@ -94,8 +94,9 @@ func TestGetPhraseList(t *testing.T) {
 		t.Log(p.String())
 	}
 }
+
 // Test GetPhraseListForCurators
-func TestGetPhraseListForCurators(t *testing.T){
+func TestGetPhraseListForCurators(t *testing.T) {
 
 	// Connect to MongoDB with default URL string
 	mongoDB, err := connectToMongo("mongodb://localhost:27017")
@@ -104,7 +105,7 @@ func TestGetPhraseListForCurators(t *testing.T){
 	}
 
 	// Get the phrases collection from the cool_songs database
-	phrasesCollection := NewPhraseConnection(mongoDB)
+	phrasesCollection := newTestPhraseConnection(mongoDB)
 
 	// Connect to MySQL database
 	sqlDB, err := newDBConnection()
@@ -133,8 +134,8 @@ func TestGetPhraseListForCurators(t *testing.T){
 			t.Fatal(err)
 		}
 	}
-        //testing the GetPhraseForCurators
-        //With the user that submitted being the reviewer
+	//testing the GetPhraseForCurators
+	//With the user that submitted being the reviewer
 	firstBatchPhrases, err := GetPhraseListForCurators(int64(maxPhrases), testUser, phrasesCollection)
 	if err != nil {
 		t.Fatal(err)
@@ -145,7 +146,7 @@ func TestGetPhraseListForCurators(t *testing.T){
 		t.Error("Got too many phrases! Expected", maxPhrases, "got", len(firstBatchPhrases))
 	}
 
-        //second batch and first batch must be the exact same
+	//second batch and first batch must be the exact same
 	secondBatchPhrases, err := GetPhraseListForCurators(int64(maxPhrases), testUser, phrasesCollection)
 	if err != nil {
 		t.Fatal(err)
@@ -156,12 +157,12 @@ func TestGetPhraseListForCurators(t *testing.T){
 		t.Error("Got too many phrases! Expected", maxPhrases, "got", len(secondBatchPhrases))
 	}
 
-        //check if the batches have matching strings, not order may not be the same for both batches
-        for i,v := range firstBatchPhrases{
-            if (strings.Compare(v.PhraseText,secondBatchPhrases[i].PhraseText) != 0){
-                t.Error("Batches may not have matched, check order")
-            }
-        }
+	//check if the batches have matching strings, not order may not be the same for both batches
+	for i, v := range firstBatchPhrases {
+		if strings.Compare(v.PhraseText, secondBatchPhrases[i].PhraseText) != 0 {
+			t.Error("Batches may not have matched, check order")
+		}
+	}
 }
 
 // Test GetNewPhraseListForCurators
@@ -173,7 +174,7 @@ func TestGetNewPhrasesForCurators(t *testing.T) {
 	}
 
 	// Get the phrases collection from the cool_songs database
-	phrasesCollection := NewPhraseConnection(mongoDB)
+	phrasesCollection := newTestPhraseConnection(mongoDB)
 
 	// Connect to MySQL database
 	sqlDB, err := newDBConnection()
@@ -204,7 +205,7 @@ func TestGetNewPhrasesForCurators(t *testing.T) {
 	}
 
 	// Get phrases for curator list
-	phrases, err := GetNewPhraseListForCurators(int64(maxPhrases),testUser ,phrasesCollection)
+	phrases, err := GetNewPhraseListForCurators(int64(maxPhrases), testUser, phrasesCollection)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -226,9 +227,9 @@ func TestGetNewPhrasesForCurators(t *testing.T) {
 			t.Error("Display value is not InReveiw! Expected", InReview, "got value:", result.DisplayPublic)
 		}
 
-                if result.ReviewedBy != testUser.ID{
-                        t.Error("Incorrect assignment to curator! Expected", testUser.ID, "got value:", result.ReviewedBy)
-                }
+		if result.ReviewedBy != testUser.ID {
+			t.Error("Incorrect assignment to curator! Expected", testUser.ID, "got value:", result.ReviewedBy)
+		}
 		t.Log("PhraseText:", p.PhraseText)
 	}
 
@@ -251,7 +252,7 @@ func TestGetInReviewPhrases(t *testing.T) {
 	}
 
 	// Get the phrases collection from the cool_songs database
-	phrasesCollection := NewPhraseConnection(mongoDB)
+	phrasesCollection := newTestPhraseConnection(mongoDB)
 
 	// Connect to MySQL database
 	sqlDB, err := newDBConnection()
@@ -282,21 +283,21 @@ func TestGetInReviewPhrases(t *testing.T) {
 	}
 
 	// Get new phrases for curator list which assigns in this case just 1 phrase to be reviewed by the testUser (who is also the submitter)
-	phrases, err := GetNewPhraseListForCurators(int64(1),testUser ,phrasesCollection)
+	phrases, err := GetNewPhraseListForCurators(int64(1), testUser, phrasesCollection)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-        inPhrases, err2 := GetInReviewPhraseList(int64(1), testUser, phrasesCollection)
+	inPhrases, err2 := GetInReviewPhraseList(int64(1), testUser, phrasesCollection)
 	if err2 != nil {
 		t.Fatal(err)
 	}
 
 	// Check the fields for all and print the phrases
 	for i, p := range phrases {
-                if p.ReviewedBy != inPhrases[i].ReviewedBy{
-                        t.Error("did not correctly assign and retrieve phrases in review")
-                }
+		if p.ReviewedBy != inPhrases[i].ReviewedBy {
+			t.Error("did not correctly assign and retrieve phrases in review")
+		}
 		t.Log("PhraseText:", p.PhraseText)
 	}
 
@@ -357,7 +358,7 @@ func TestInsertPhrase(t *testing.T) {
 	}
 
 	// Get the phrases collection from the cool_songs database
-	phrasesCollection := NewPhraseConnection(mongoDB)
+	phrasesCollection := newTestPhraseConnection(mongoDB)
 
 	// Connect to MySQL database
 	sqlDB, err := newDBConnection()
@@ -414,7 +415,7 @@ func TestAcceptRejectPhrase(t *testing.T) {
 	}
 
 	// Get the phrases collection from the cool_songs database
-	phrasesCollection := NewPhraseConnection(mongoDB)
+	phrasesCollection := newTestPhraseConnection(mongoDB)
 
 	// Get test user
 	testUser := newTestUser()
@@ -439,7 +440,7 @@ func TestAcceptRejectPhrase(t *testing.T) {
 	}
 
 	// Test accept
-	err = AcceptPhrase(testPhrase, testUser, phrasesCollection)
+	err = AcceptPhrase(testPhrase.PhraseID.Hex(), testUser, phrasesCollection)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -456,12 +457,12 @@ func TestAcceptRejectPhrase(t *testing.T) {
 	}
 
 	// Set phrase as rejected
-	err = RejectPhrase(testPhrase, testUser, phrasesCollection)
+	err = RejectPhrase(testPhrase.PhraseID.Hex(), testUser, phrasesCollection)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Check that out
+	// Check if the phrase was rejected
 	err = phrasesCollection.FindOne(context.Background(), bson.M{"_id": testPhrase.PhraseID}).Decode(&queryPhrase)
 	if err != nil {
 		t.Fatal(err)
@@ -480,7 +481,7 @@ func TestAcceptRejectPhrase(t *testing.T) {
 }
 
 //Test AnonimizeUserData
-func TestAnonimizeUserData(t *testing.T){
+func TestAnonimizeUserData(t *testing.T) {
 
 	// Connect to MongoDB with default URL string
 	mongoDB, err := connectToMongo("mongodb://localhost:27017")
@@ -488,12 +489,12 @@ func TestAnonimizeUserData(t *testing.T){
 		t.Fatal(err)
 	}
 
-        // Get the phrases collection from the database
-        phrasesCollection := NewPhraseConnection(mongoDB)
+	// Get the phrases collection from the database
+	phrasesCollection := newTestPhraseConnection(mongoDB)
 
-        // Get test user
-        testUser := newTestUser()
-        err = AnonimizeUserData(testUser,phrasesCollection)
+	// Get test user
+	testUser := newTestUser()
+	err = AnonimizeUserData(testUser, phrasesCollection)
 
 	// Create the phrase
 	testPhrase := Phrase{
@@ -507,9 +508,9 @@ func TestAnonimizeUserData(t *testing.T){
 		PhraseText:      "All your base are belong to us.",
 		DisplayPublic:   Unreviewed,
 	}
-        if err != nil {
-                t.Fatal(err)
-        }
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// Insert into collection
 	_, err = phrasesCollection.InsertOne(context.Background(), testPhrase)
@@ -517,15 +518,15 @@ func TestAnonimizeUserData(t *testing.T){
 		t.Fatal(err)
 	}
 
-        // Test anonimize data
-        err = AnonimizeUserData(testUser, phrasesCollection)
+	// Test anonimize data
+	err = AnonimizeUserData(testUser, phrasesCollection)
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Find the phrase and check if the submitter is anon
-        // to decode is to "store"
+	// to decode is to "store"
 	var queryPhrase Phrase
 	err = phrasesCollection.FindOne(context.Background(), bson.M{"_id": testPhrase.PhraseID}).Decode(&queryPhrase)
 	if err != nil {
