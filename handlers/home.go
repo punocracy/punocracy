@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"html/template"
+	"math"
 	"net/http"
 	"strings"
 	"time"
@@ -27,6 +28,11 @@ type phraseDisplay struct {
 	PhraseText          string
 	Author              string
 	TimeSinceSubmission string
+	IsOneStar           bool
+	IsTwoStar           bool
+	IsThreeStar         bool
+	IsFourStar          bool
+	IsFiveStar          bool
 }
 
 type resultPageData struct {
@@ -96,21 +102,21 @@ func GetHome(w http.ResponseWriter, r *http.Request) {
 
 	samplephrase := models.Phrase{
 		PhraseID:        primitive.NewObjectID(),
-		SubmitterUserID: 1,
-		SubmissionDate:  time.Now(),
+		SubmitterUserID: 5,
+		SubmissionDate:  time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
 		PhraseRatings:   models.Rating{OneStar: 1, TwoStar: 2, ThreeStar: 3, FourStar: 0, FiveStar: 0},
 		WordList:        []int{},
-		ReviewedBy:      1,
+		ReviewedBy:      5,
 		ReviewDate:      time.Now(),
 		PhraseText:      "This is a test",
 		DisplayPublic:   models.Accepted,
 	}
 
 	userTable := models.NewUser(db)
-	sampleUser, _ := userTable.GetByID(nil, 1)
+	sampleUser, _ := userTable.GetByID(nil, 5)
 	now := time.Now()
 	sampleTime := now.Sub(samplephrase.SubmissionDate)
-
+	avgRating := math.Round(models.AverageRating(samplephrase.PhraseRatings))
 	phraseList := []phraseDisplay{}
 
 	phraseList = append(phraseList, phraseDisplay{

@@ -521,11 +521,11 @@ func GetPhraseHistory(user UserRow, phrasesCollection *mongo.Collection) ([]Phra
 }
 
 // Get average rating from rating struct
-func AverageRating(r Rating) float32 {
+func AverageRating(r Rating) float64 {
 	totalRatings := r.OneStar + r.TwoStar + r.ThreeStar + r.FourStar + r.FiveStar
 	if totalRatings == 0 {
-		return float32(0)
+		return float64(0)
 	}
 	weightedRatings := 1*r.OneStar + 2*r.TwoStar + 3*r.ThreeStar + 4*r.FourStar + 5*r.FiveStar
-	return 5.0 * float32(weightedRatings) / float32(5*totalRatings)
+	return 5.0 * float64(weightedRatings) / float64(5*totalRatings)
 }
