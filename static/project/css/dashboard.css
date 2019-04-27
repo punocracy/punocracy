@@ -1,45 +1,46 @@
-*{
+.rating input {
     margin: 0;
     padding: 0;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
 }
 
-.rate {
-    float: left;
-    height: 46px;
-    padding: 0 10px;
+.rating-selection {
+    background-image: url(http://i.imgur.com/lXzJ1eB.png);
 }
-.rate:not(:checked) > input {
-    position:absolute;
-    top:-9999px;
+
+.rating input:active+.rating-selection {
+    opacity: 0.9;
 }
-.rate:not(:checked) > label {
-    float:right;
-    width:1em;
-    overflow:hidden;
-    white-space:nowrap;
+
+.rating input:checked+.rating-selection {
+    -webkit-filter: none;
+    -moz-filter: none;
+    filter: none;
+}
+
+.rating-selection{
     cursor:pointer;
-    font-size:30px;
-    color:#ccc;
+    background-size:contain;
+    background-repeat:no-repeat;
+    display:inline-block;
+    width:100px;height:70px;
+    -webkit-transition: all 100ms ease-in;
+       -moz-transition: all 100ms ease-in;
+            transition: all 100ms ease-in;
+    -webkit-filter: brightness(1.8) grayscale(1) opacity(.7);
+       -moz-filter: brightness(1.8) grayscale(1) opacity(.7);
+            filter: brightness(1.8) grayscale(1) opacity(.7);
 }
-.rate:not(:checked) > label:before {
-    content: '★ ';
-}
-.rate > input:checked ~ label {
-    color: #ffc700;    
-}
-.rate:not(:checked) > label:hover,
-.rate:not(:checked) > label:hover ~ label {
-    color: #deb217;  
-}
-.rate > input:checked + label:hover,
-.rate > input:checked + label:hover ~ label,
-.rate > input:checked ~ label:hover,
-.rate > input:checked ~ label:hover ~ label,
-.rate > label:hover ~ input:checked ~ label {
-    color: #c59b08;
+.rating-selection:hover{
+    -webkit-filter: brightness(1.2) grayscale(.5) opacity(.9);
+       -moz-filter: brightness(1.2) grayscale(.5) opacity(.9);
+            filter: brightness(1.2) grayscale(.5) opacity(.9);
 }
 
 .modal-dialog {
     z-index: 1100;
 }
+
 /* Modified from: https://github.com/mukulkant/Star-rating-using-pure-css */
