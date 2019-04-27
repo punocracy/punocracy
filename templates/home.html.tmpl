@@ -26,11 +26,21 @@
       <div class="list-group-item">
         <h5 class="mb-1">{{.PhraseText}}</h5>
         <div>
+          {{if .IsOneStar}}
           <img src="star.svg" alt="">
+          {{end}}
+          {{if .IsTwoStar}}
           <img src="star.svg" alt="">
+          {{end}}
+          {{if .IsThreeStar}}
           <img src="star.svg" alt="">
+          {{end}}
+          {{if .IsFourStar}}
           <img src="star.svg" alt="">
+          {{end}}
+          {{if .IsFiveStar}}
           <img src="star.svg" alt="">
+          {{end}}
         </div>
         <div class="d-flex justify-content-between">
           <p class="mb-1"><a href="#">{{.Author}}</a></p>
