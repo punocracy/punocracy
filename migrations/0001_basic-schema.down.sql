@@ -1,1 +1,3 @@
-drop table if exists users cascade;
+DROP TABLE IF EXISTS Permissions_T;
+DROP TABLE IF EXISTS Users_T;
+DROP TABLE IF EXISTS Words_T;
