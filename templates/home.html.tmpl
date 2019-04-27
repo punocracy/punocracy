@@ -27,7 +27,7 @@
       {{range .Phrases}}
       <div class="list-group-item">
         <h5 class="mb-1">{{.PhraseText}}</h5>
-        <div class="rate d-flex justify-content-between">
+        <div class="rate d-flex justify-content-center">
           <input type="radio" checked id="star5" name="rate" value="5" {{if .IsFiveStar}}checked{{end}} />
           <label for="star5" title="text">5 stars</label>
           <input type="radio" id="star4" name="rate" value="4" {{if .IsFourStar}}checked{{end}} />
