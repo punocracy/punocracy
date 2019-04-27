@@ -28,15 +28,27 @@ type UserRating struct {
 // String implements the Stringer interface
 func (u UserRating) String() string {
 	formatString := `{
-	phraseID: ObjectID("%v")
-	rateDate: %v
+	"userID": ObjectID("%v"),
+	"phraseID": ObjectID("%v"),
+	"ratingValue": %v,
+	"rateDate": %v
 }`
-	return fmt.Sprintf(formatString, u.PhraseID, u.RatingValue, u.RateDate)
+	return fmt.Sprintf(formatString, u.UserID, u.PhraseID, u.RatingValue, u.RateDate)
 }
 
 // NewUserRatingsConnection creats a reference to the userRatings collection from DB pointer
 func NewUserRatingsConnection(db *mongo.Database) *mongo.Collection {
 	return db.Collection("userRatings")
+}
+
+// AddOrChangeRating adds or modifies a rating value given a user, phrase, and rating value
+func AddOrChangeRating(user UserRow, rating int, thePhrase Phrase, phrases *mongo.Collection, userRatings *mongo.Collection) error {
+	// Attempt to change the rating, and if an ErrNoDocuments error is encountered, add it afresh
+	err := changeRating(user, rating, thePhrase, phrases, userRatings)
+	if err == mongo.ErrNoDocuments {
+		return addRating(user, rating, thePhrase, phrases, userRatings)
+	}
+	return err
 }
 
 // addRating adds a rating given a Phrase, rating value, UserRow, and the collection pointers. It places the rating in the userRatings collection without checking if one exists
@@ -51,7 +63,7 @@ func addRating(user UserRow, rating int, thePhrase Phrase, phrases *mongo.Collec
 	}
 
 	// Construct the rating struct
-	ratingEntry = UserRating{
+	ratingEntry := UserRating{
 		ratingID:    primitive.NewObjectID(),
 		UserID:      user.ID,
 		PhraseID:    thePhrase.PhraseID,
@@ -73,15 +85,21 @@ func addRating(user UserRow, rating int, thePhrase Phrase, phrases *mongo.Collec
 // changeRating changes the rating for a user and phrase pair given a new rating value. Assumes it exists in the userRatings collection
 func changeRating(user UserRow, rating int, thePhrase Phrase, phrases *mongo.Collection, userRatings *mongo.Collection) error {
 	// Get the old rating value
-	// Get the rating by userID and phrase
-	filterDoc := bson.M{"userID": user.ID, "phraseID": thePhrase.PhraseID}
-	updateDoc := bson.M{"$set": bson.M{"ratingValue": rating, "rateDate": time.Now()}}
-	_, err := userRatings.UpdateOne(context.Background(), filterDoc, updateDoc)
+	oldRating, err := getRating(user, thePhrase, userRatings)
 	if err != nil {
 		return err
 	}
 
-	// Change rating for phrase
+	// Update the userRatings entry
+	filterDoc := bson.M{"userID": user.ID, "phraseID": thePhrase.PhraseID}
+	updateDoc := bson.M{"$set": bson.M{"ratingValue": rating, "rateDate": time.Now()}}
+	_, err = userRatings.UpdateOne(context.Background(), filterDoc, updateDoc)
+	if err != nil {
+		return err
+	}
+
+	// Change rating for phrase and return the error
+	return changeRatingForPhrase(thePhrase, oldRating.RatingValue, rating, phrases)
 }
 
 // getRating retrieves a rating given a user and phrase
@@ -90,69 +108,6 @@ func getRating(user UserRow, thePhrase Phrase, userRatings *mongo.Collection) (U
 	err := userRatings.FindOne(context.Background(), bson.M{"userID": user.ID, "phraseID": thePhrase.PhraseID}).Decode(&theRating)
 	return theRating, err
 }
-
-//// AddRating adds a rating for a specific user
-//func AddOrChangeRating(user UserRow, rating int, ratedPhrase Phrase, phrasesCollection *mongo.Collection, userRatings *mongo.Collection) error {
-//	// Ensure the phrase exists in th ecollection
-//	phraseExists, err := checkIfPhraseExists(ratedPhrase, phrasesCollection)
-//	if err != nil {
-//		return err
-//	} else if !phraseExists {
-//		return ErrPhraseNotFound
-//	}
-//
-//	// Build UserRating document
-//	ratingEntry := UserRating{PhraseID: ratedPhrase.PhraseID, RatingValue: rating, RateDate: time.Now()}
-//
-//	// Check if user has a rating history entry. If not, create user rating history
-//	var userHist UserHistory
-//	err = userRatings.FindOne(context.Background(), bson.M{"userID": user.ID}).Decode(&userHist)
-//
-//	// If user has history, check if the rating history
-//	if err == nil {
-//		// Check if the user has rated this document before
-//		newRatingFlag := true
-//		var oldRating UserRating
-//		for _, r := range userHist.RatingHistory {
-//			if r.PhraseID == ratedPhrase.PhraseID {
-//				newRatingFlag = false
-//				oldRating = r
-//				break
-//			}
-//		}
-//
-//		// Add to set if it's a new rating or update the rating if it's already been rated
-//		if newRatingFlag {
-//			// Add document to the user's rating history
-//			filterDoc := bson.M{"userID": user.ID}
-//			updateDoc := bson.M{"$addToSet": bson.M{"ratingHistory": ratingEntry}}
-//			_, err = userRatings.UpdateOne(context.Background(), filterDoc, updateDoc)
-//			if err != nil {
-//				return err
-//			}
-//		} else {
-//			// Change entry in user's rating history
-//			//filterDoc := bson.M{"userID": user.ID, "ratingHistory.phraseID": ratedPhrase.PhraseID}
-//
-//			// Decrement the rating in the thingy
-//			removeRatingFromPhrase(ratedPhrase, oldRating.RatingValue, phrasesCollection)
-//		}
-//	} else if err == mongo.ErrNoDocuments {
-//		userHist.UserID = user.ID
-//		userHist.RatingHistory = []UserRating{ratingEntry}
-//		_, err := userRatings.InsertOne(context.Background(), userHist)
-//		if err != nil {
-//			return err
-//		}
-//	} else {
-//		return err
-//	}
-//
-//	// Update the phrase to include the rating
-//	addRatingToPhrase(ratedPhrase, rating, phrasesCollection)
-//
-//	return nil
-//}
 
 // TODO: write DeleteRating function
 func DeleteRating(user UserRow, rating int, ratedPhrase Phrase, userRatings *mongo.Collection) error {
@@ -167,6 +122,15 @@ func GetRatingsByUserID(user UserRow, userRatings *mongo.Collection) ([]UserRati
 // TODO: write DeleteUserRatings function
 // TODO: write updateRatingByUser to update the rating in the phrases collection
 // NOTE: Make everything propagate to the phrases table
+
+// changeRatingForPhrases changes a rating in the phrases collection.
+func changeRatingForPhrase(thePhrase Phrase, oldRating int, newRating int, phrases *mongo.Collection) error {
+	// Update in the phrases collection
+	filterDoc := bson.M{"_id": thePhrase.PhraseID}
+	updateDoc := bson.M{"$inc": bson.M{"ratings." + ratingToRatingString(oldRating): -1, "ratings." + ratingToRatingString(newRating): 1}}
+	_, err := phrases.UpdateOne(context.Background(), filterDoc, updateDoc)
+	return err
+}
 
 // Convert an integer rating to its corresponding document string
 func ratingToRatingString(r int) string {

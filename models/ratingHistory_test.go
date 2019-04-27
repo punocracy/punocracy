@@ -30,6 +30,16 @@ func deletePhraseFromPhrases(p Phrase, phrasesCollection *mongo.Collection) erro
 	return err
 }
 
+// Return phrases_test collection connection
+func newTestPhraseConnection(db *mongo.Database) *mongo.Collection {
+	return db.Collection("phrases_test")
+}
+
+// Return userRatings_test collection connection
+func newTestUserRatingsConnection(db *mongo.Database) *mongo.Collection {
+	return db.Collection("userRatings_test")
+}
+
 // Test checkIfPhraseExists function
 func TestCheckIfPhraseExists(t *testing.T) {
 	// Connect to MongoDB and get phrases collection
@@ -37,7 +47,7 @@ func TestCheckIfPhraseExists(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	phrasesCollection := NewPhraseConnection(mongoDB)
+	phrasesCollection := newTestPhraseConnection(mongoDB)
 
 	// Test user and phrase
 	testUser := newTestUser()
@@ -131,75 +141,22 @@ func TestAddRemoveRatingToPhrase(t *testing.T) {
 }
 
 // TestAddRating tests the AddRating function
-func TestAddOrChangeRating(t *testing.T) {
-	// Connect to MongoDB with default URL string
-	mongoDB, err := connectToMongo("mongodb://localhost:27017")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Get userRatings collection and phrases collection
-	userRatings := NewUserRatingsConnection(mongoDB)
-	phrasesCollection := NewPhraseConnection(mongoDB)
-
-	// Get test user and phrase
-	testUser := newTestUser()
-	testPhrase := newTestPhrase(testUser)
-
-	// Add to user's history: should fail
-	err = AddOrChangeRating(testUser, 5, testPhrase, phrasesCollection, userRatings)
-	if err == nil {
-		t.Error("Should not update phrase not in the phrases collection!")
-	} else if err != ErrPhraseNotFound {
-		t.Fatal(err)
-	}
-
-	// Insert into the phrases collection. AddRating should work
-	_, err = phrasesCollection.InsertOne(context.Background(), testPhrase)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Add to the user's history. Should succeed
-	err = AddOrChangeRating(testUser, 5, testPhrase, phrasesCollection, userRatings)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Check for the rating.
-	var testUserHist UserHistory
-	err = userRatings.FindOne(context.Background(), bson.M{"userID": testUser.ID}).Decode(&testUserHist)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Look for the rating in user's history
-	found := false
-	for _, r := range testUserHist.RatingHistory {
-		if r.PhraseID == testPhrase.PhraseID {
-			found = true
-			break
-		}
-	}
-	if !found {
-		t.Error("Could not find testUser rating. testUserHist:", testUserHist)
-	}
-
-	// TODO: check if the ratings were updated
-	// TODO: delete stuff
-	_, err = userRatings.DeleteOne(context.Background(), bson.M{"userID": testUser.ID})
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = phrasesCollection.DeleteOne(context.Background(), bson.M{"_id": testPhrase.PhraseID})
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Add second rating
-	//testRating.PhraseID = primitive.NewObjectID()
-	//testRating.SubmissionDate = time.Now()
-}
+//func TestAddOrChangeRating(t *testing.T) {
+//	// Connect to MongoDB with default URL string
+//	mongoDB, err := connectToMongo("mongodb://localhost:27017")
+//	if err != nil {
+//		t.Fatal(err)
+//	}
+//
+//	// Get userRatings collection and phrases collection
+//	userRatings := newTestUserRatingsConnection(mongoDB)
+//	phrasesCollection := newTestPhraseConnection(mongoDB)
+//
+//	// Get test user and phrase
+//	testUser := newTestUser()
+//	testPhrase := newTestPhrase(testUser)
+//
+//}
 
 // TODO: write TestChangeRating function
 // TODO: write TestDeleteRating function
