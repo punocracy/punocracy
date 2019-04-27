@@ -104,7 +104,7 @@ func GetHome(w http.ResponseWriter, r *http.Request) {
 		PhraseID:        primitive.NewObjectID(),
 		SubmitterUserID: 5,
 		SubmissionDate:  time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
-		PhraseRatings:   models.Rating{OneStar: 1, TwoStar: 2, ThreeStar: 3, FourStar: 0, FiveStar: 0},
+		PhraseRatings:   models.Rating{OneStar: 0, TwoStar: 0, ThreeStar: 1, FourStar: 4, FiveStar: 1},
 		WordList:        []int{},
 		ReviewedBy:      5,
 		ReviewDate:      time.Now(),
@@ -119,6 +119,7 @@ func GetHome(w http.ResponseWriter, r *http.Request) {
 	avgRating := math.Round(models.AverageRating(samplephrase.PhraseRatings))
 	phraseList := []phraseDisplay{}
 
+	logrus.Infoln(avgRating)
 	phraseList = append(phraseList, phraseDisplay{
 		PhraseText:          samplephrase.PhraseText,
 		Author:              sampleUser.Username,
