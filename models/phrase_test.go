@@ -440,7 +440,7 @@ func TestAcceptRejectPhrase(t *testing.T) {
 	}
 
 	// Test accept
-	err = AcceptPhrase(testPhrase.PhraseID.String(), testUser, phrasesCollection)
+	err = AcceptPhrase(testPhrase.PhraseID.Hex(), testUser, phrasesCollection)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -457,7 +457,7 @@ func TestAcceptRejectPhrase(t *testing.T) {
 	}
 
 	// Set phrase as rejected
-	err = RejectPhrase(testPhrase.PhraseID.String(), testUser, phrasesCollection)
+	err = RejectPhrase(testPhrase.PhraseID.Hex(), testUser, phrasesCollection)
 	if err != nil {
 		t.Fatal(err)
 	}

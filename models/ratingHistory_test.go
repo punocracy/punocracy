@@ -91,7 +91,7 @@ func TestAddRemoveRatingToPhrase(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	phrasesCollection := NewPhraseConnection(mongoDB)
+	phrasesCollection := newTestPhraseConnection(mongoDB)
 
 	testUser := newTestUser()
 	testPhrase := newTestPhrase(testUser)
