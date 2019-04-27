@@ -155,7 +155,7 @@ func ratingToRatingString(r int) string {
 // Get a phrase by ID
 func getPhraseByID(phraseID primitive.ObjectID, phrasesCollection *mongo.Collection) (Phrase, error) {
 	var returnPhrase Phrase
-	err := phrasesCollection.FindOne(context.Background(), bson.M{"phraseID": phraseID}).Decode(&returnPhrase)
+	err := phrasesCollection.FindOne(context.Background(), bson.M{"_id": phraseID}).Decode(&returnPhrase)
 	return returnPhrase, err
 }
 
