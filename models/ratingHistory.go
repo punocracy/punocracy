@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
 
@@ -54,7 +55,7 @@ func GetRatingsByUserID(user UserRow, userRatings *mongo.Collection) ([]UserRati
 
 	// Load into array
 	var ratingHistArray []UserRating
-	for cur.Next() {
+	for cur.Next(context.Background()) {
 		// Decode cursor value
 		var thisRating UserRating
 		err = cur.Decode(&thisRating)
@@ -68,6 +69,17 @@ func GetRatingsByUserID(user UserRow, userRatings *mongo.Collection) ([]UserRati
 
 	return ratingHistArray, nil
 }
+
+// Get associated phrases from user's ratings
+//func GetPhrasesFromUserRatings(myRatings []UserRating, phrases *mongo.Collection) ([]Phrase, error) {
+//	// Get userIDs from the user's ratings
+//	var userIDs []primitive.ObjectID
+//	for _, r := range myRatings {
+//		userIDs = append(userIDs, r.UserID)
+//	}
+//
+//	// Query for phrases associated with those IDs
+//}
 
 // AddOrChangeRating adds or modifies a rating value given a user, phrase, and rating value
 func AddOrChangeRating(user UserRow, rating int, thePhrase Phrase, phrases *mongo.Collection, userRatings *mongo.Collection) error {

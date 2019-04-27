@@ -40,6 +40,69 @@ func newTestUserRatingsConnection(db *mongo.Database) *mongo.Collection {
 	return db.Collection("userRatings_test")
 }
 
+// Test GetRatingsByUserID function
+func TestGetRatingsByUserID(t *testing.T) {
+	// Connect to MySQL
+	mySQL, err := newDBConnection()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Connect to MongoDB and get phrases and userRatings collections
+	mongoDB, err := connectToMongo("mongodb://localhost:27017")
+	if err != nil {
+		t.Fatal(err)
+	}
+	phrases := newTestPhraseConnection(mongoDB)
+	userRatings := newTestUserRatingsConnection(mongoDB)
+
+	// Insert test phrase into collection
+	testUser := newTestUser()
+	testPhrase := newTestPhrase(testUser)
+	_, err = phrases.InsertOne(context.Background(), testPhrase)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Add a rating from testUser
+	err = AddOrChangeRating(testUser, 5, testPhrase, phrases, userRatings)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Insert second phrase
+	myWord := NewWord(mySQL)
+	text := "To live is to dream"
+	err = InsertPhrase(text, testUser, myWord, phrases)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Get phraseID from second phrase
+	var secondPhrase Phrase
+	err = phrases.FindOne(context.Background(), bson.M{"phraseText": text}).Decode(&secondPhrase)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Rate second phrase
+	err = AddOrChangeRating(testUser, 5, secondPhrase, phrases, userRatings)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Get list of ratings
+	myRatings, err := GetRatingsByUserID(testUser, userRatings)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Print ratings
+	for _, r := range myRatings {
+		t.Log(r)
+	}
+}
+
 // Test checkIfPhraseExists function
 func TestCheckIfPhraseExists(t *testing.T) {
 	// Connect to MongoDB and get phrases collection
