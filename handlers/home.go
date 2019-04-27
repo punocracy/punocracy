@@ -106,12 +106,17 @@ func GetHome(w http.ResponseWriter, r *http.Request) {
 		DisplayPublic:   models.Accepted,
 	}
 
+	userTable := models.NewUser(db)
+	sampleUser, _ := userTable.GetByID(nil, 1)
+	now := time.Now()
+	sampleTime := now.Sub(samplephrase.SubmissionDate)
+
 	phraseList := []phraseDisplay{}
 
 	phraseList = append(phraseList, phraseDisplay{
 		PhraseText:          samplephrase.PhraseText,
-		Author:              "James",
-		TimeSinceSubmission: "12 days",
+		Author:              sampleUser.Username,
+		TimeSinceSubmission: sampleTime.String(),
 	})
 
 	pageData := homePageData{CurrentUser: currentUser, IsCurator: isCurator, Words: words, Phrases: phraseList}
