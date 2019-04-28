@@ -3,12 +3,15 @@ package handlers
 import (
 	"html/template"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/alvarosness/punocracy/libhttp"
 	"github.com/alvarosness/punocracy/models"
+	"github.com/go-playground/form"
 	"github.com/gorilla/sessions"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -93,5 +96,33 @@ func GetHistory(w http.ResponseWriter, r *http.Request) {
 
 // PostHistory handles the update of user ratings for phrases
 func PostHistory(w http.ResponseWriter, r *http.Request) {
-	logrus.Infoln("this is supposed to update the rating a user gave to a phrase")
+	w.Header().Set("Content-Type", "text/html")
+
+	sessionStore := r.Context().Value("sessionStore").(sessions.Store)
+
+	session, _ := sessionStore.Get(r, "punocracy-session")
+
+	currentUser, _ := getUser(session)
+
+	r.ParseForm()
+
+	decoder := form.NewDecoder()
+
+	var ratings phraseRatings
+
+	decoder.Decode(&ratings, r.Form)
+
+	mongdb := r.Context().Value("mongodb").(*mongo.Database)
+	phrasesCollection := models.NewPhraseConnection(mongdb)
+	ratingsCollection := models.NewUserRatingsConnection(mongdb)
+
+	for k, v := range ratings.Ratings {
+		phrID, _ := primitive.ObjectIDFromHex(k)
+		rating, _ := strconv.Atoi(v)
+
+		phr, _ := models.GetPhraseByID(phrID, phrasesCollection)
+		models.AddOrChangeRating(*currentUser, rating, phr, phrasesCollection, ratingsCollection)
+	}
+
+	http.Redirect(w, r, "/history", 302)
 }
