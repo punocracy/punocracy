@@ -92,7 +92,7 @@ func (p Phrase) String() string {
 // Type for sorting phrases.
 type phraseSorter struct {
 	phrase    Phrase
-	avgRating float32
+	avgRating float64
 }
 
 // Type for sorting a list of phrases. Implements sort.Interface
@@ -483,12 +483,49 @@ func sortPhrases(phraseList []Phrase) {
 	}
 }
 
+// GetPhraseHistory for phrases from a list of words
+func GetPhraseHistory(user UserRow, phrasesCollection *mongo.Collection) ([]Phrase, error) {
+	// Build the query document
+	queryDocument := bson.M{"submitterUserID": user.ID}
+
+	// Get a cursor pointing to the list of phrases as a result of the query
+	cur, err := phrasesCollection.Find(context.Background(), queryDocument)
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(context.Background())
+
+	// list of phrases
+	var phraseList []Phrase
+
+	// get query result and print
+	for cur.Next(context.Background()) {
+		// Decode into struct
+		var onePhrase Phrase
+		//var onePhrase bson.d
+		err = cur.Decode(&onePhrase)
+		if err != nil {
+			return nil, err
+		}
+		// append to phraseList
+		phraseList = append(phraseList, onePhrase)
+	}
+
+	// check for cursor errors
+	if err := cur.Err(); err != nil {
+		return nil, err
+	}
+
+	// return the result
+	return phraseList, nil
+}
+
 // Get average rating from rating struct
-func AverageRating(r Rating) float32 {
+func AverageRating(r Rating) float64 {
 	totalRatings := r.OneStar + r.TwoStar + r.ThreeStar + r.FourStar + r.FiveStar
 	if totalRatings == 0 {
-		return float32(0)
+		return float64(0)
 	}
 	weightedRatings := 1*r.OneStar + 2*r.TwoStar + 3*r.ThreeStar + 4*r.FourStar + 5*r.FiveStar
-	return 5.0 * float32(weightedRatings) / float32(5*totalRatings)
+	return 5.0 * float64(weightedRatings) / float64(5*totalRatings)
 }

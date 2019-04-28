@@ -97,7 +97,8 @@ func PostLogin(w http.ResponseWriter, r *http.Request) {
 
 	user, err := u.GetUserByUsernameAndPassword(nil, username, password)
 	if err != nil {
-		http.Redirect(w, r, "login/", http.StatusFound)
+		logrus.Errorln(err.Error())
+		http.Redirect(w, r, "/login", http.StatusFound)
 	}
 
 	session, _ := sessionStore.Get(r, "punocracy-session")
@@ -160,13 +161,12 @@ func PutUsersID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	email := r.FormValue("Email")
 	password := r.FormValue("Password")
 	passwordAgain := r.FormValue("PasswordAgain")
 
 	u := models.NewUser(db)
 
-	currentUser, err = u.UpdateEmailAndPasswordByID(nil, currentUser.ID, email, password, passwordAgain)
+	currentUser, err = u.UpdateUsernameAndPasswordByID(nil, currentUser.ID, currentUser.Username, password, passwordAgain)
 	if err != nil {
 		libhttp.HandleErrorJson(w, err)
 		return

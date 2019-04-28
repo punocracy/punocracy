@@ -36,24 +36,30 @@
 
     <div class="col-sm-6">
         <h2>OG Phrases</h2>
-        <div class="list-group list-group-flush">
+        <form class="form list-group list-group-flush" action="/now" method="POST">
             {{range .Phrases}}
             <div class="list-group-item">
                 <h5 class="mb-1">{{.PhraseText}}</h5>
-                <div>
-                    <img src="star.svg" alt="">
-                    <img src="star.svg" alt="">
-                    <img src="star.svg" alt="">
-                    <img src="star.svg" alt="">
-                    <img src="star.svg" alt="">
-                </div>
                 <div class="d-flex justify-content-between">
-                    <p class="mb-1"><a href="#">Anon</a></p>
-                    <small>30 days ago</small>
+                    <p class="mb-1"><a href="#">{{.Author}}</a></p>
+                    <small>{{.TimeSinceSubmission}}</small>
+                </div>
+                <div class="rate">
+                    <input type="radio" id="{{.PhraseID}}_star5" name="Ratings[{{.PhraseID}}]" value="5" {{if .IsFiveStar}}checked{{end}} />
+                    <label for="{{.PhraseID}}_star5" title="text">5 stars</label>
+                    <input type="radio" id="{{.PhraseID}}_star4" name="Ratings[{{.PhraseID}}]" value="4" {{if .IsFourStar}}checked{{end}} />
+                    <label for="{{.PhraseID}}_star4" title="text">4 stars</label>
+                    <input type="radio" id="{{.PhraseID}}_star3" name="Ratings[{{.PhraseID}}]" value="3" {{if .IsThreeStar}}checked{{end}} />
+                    <label for="{{.PhraseID}}_star3" title="text">3 stars</label>
+                    <input type="radio" id="{{.PhraseID}}_star2" name="Ratings[{{.PhraseID}}]" value="2" {{if .IsTwoStar}}checked{{end}} />
+                    <label for="{{.PhraseID}}_star2" title="text">2 stars</label>
+                    <input type="radio" id="{{.PhraseID}}_star1" name="Ratings[{{.PhraseID}}]" value="1" {{if .IsOneStar}}checked{{end}} />
+                    <label for="{{.PhraseID}}_star1" title="text">1 star</label>
                 </div>
             </div>
             {{end}}
-        </div>
+            <button type="submit" class="btn btn-primary">Submit Ratings</button>
+        </form>
     </div>
 </div>
 {{end}}
