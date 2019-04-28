@@ -533,11 +533,16 @@ func AverageRating(r Rating) float64 {
 // GetTopPhrases gets a sorted list of the top phrases, limited by a number
 func GetTopPhrases(limit int, phrases *mongo.Collection) ([]Phrase, error) {
 	// Aggregation pipeline
-	pipeline := bson.D{
+	pipeline := bson.A{
+		// Only match accepted documents
+		bson.M{
+			"$match": bson.M{"displayValue": Accepted},
+		},
+		// Add numRatings field
 		bson.M{
 			"$addFields": bson.M{
 				"numRatings": bson.M{
-					"$sum": bson.D{
+					"$sum": bson.A{
 						"$ratings.one",
 						"$ratings.two",
 						"$ratings.three",
@@ -547,21 +552,22 @@ func GetTopPhrases(limit int, phrases *mongo.Collection) ([]Phrase, error) {
 				},
 			},
 		},
+		// Compute avg. rating
 		bson.M{
 			"$addFields": bson.M{
 				"avgRating": bson.M{
 					"$cond": bson.M{
-						"if":   bson.M{"$eq": bson.D{"$numRatings", 0}},
+						"if":   bson.M{"$eq": bson.A{"$numRatings", 0}},
 						"then": 0,
 						"else": bson.M{
-							"$divide": bson.D{
+							"$divide": bson.A{
 								bson.M{
-									"$sum": bson.D{
+									"$sum": bson.A{
 										"$ratings.one",
-										bson.M{"$multiply": bson.D{"$ratings.two", 2}},
-										bson.M{"$multiply": bson.D{"$ratings.three", 3}},
-										bson.M{"$multiply": bson.D{"$ratings.four", 4}},
-										bson.M{"$multiply": bson.D{"$ratings.five", 5}},
+										bson.M{"$multiply": bson.A{"$ratings.two", 2}},
+										bson.M{"$multiply": bson.A{"$ratings.three", 3}},
+										bson.M{"$multiply": bson.A{"$ratings.four", 4}},
+										bson.M{"$multiply": bson.A{"$ratings.five", 5}},
 									},
 								},
 								"$numRatings",
@@ -571,9 +577,11 @@ func GetTopPhrases(limit int, phrases *mongo.Collection) ([]Phrase, error) {
 				},
 			},
 		},
+		// Sort by avg. rating, then by numRatings
 		bson.M{
 			"$sort": bson.M{"avgRating": -1, "numRatings": -1},
 		},
+		// Limit output documents
 		bson.M{
 			"$limit": limit,
 		},
@@ -587,7 +595,7 @@ func GetTopPhrases(limit int, phrases *mongo.Collection) ([]Phrase, error) {
 
 	// Decode results into list
 	var topPhrases []Phrase
-	for cur.Next() {
+	for cur.Next(context.Background()) {
 		var thePhrase Phrase
 		err = cur.Decode(&thePhrase)
 		if err != nil {
