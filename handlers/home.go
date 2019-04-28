@@ -119,7 +119,6 @@ func GetHome(w http.ResponseWriter, r *http.Request) {
 	avgRating := math.Round(models.AverageRating(samplephrase.PhraseRatings))
 	phraseList := []phraseDisplay{}
 
-	logrus.Infoln(avgRating)
 	phraseList = append(phraseList, phraseDisplay{
 		PhraseText:          samplephrase.PhraseText,
 		Author:              sampleUser.Username,
@@ -175,7 +174,6 @@ func PostHome(w http.ResponseWriter, r *http.Request) {
 		}
 
 		http.Redirect(w, r, "/now", 302)
-		return
 	} else {
 		db := r.Context().Value("db").(*sqlx.DB)
 		wordTable := models.NewWord(db)

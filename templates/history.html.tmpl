@@ -6,7 +6,25 @@
       {{if .RatedPhrases}}
       {{range .RatedPhrases}}
       <div class="list-group-item">
-        <h5 class="mb-1">{{.}}</h5>
+        <h5 class="mb-1">{{.PhraseText}}</h5>
+        <small>{{.TimeSinceSubmission}}</small>
+        <div class="rate">
+          <input type="radio" id="{{.PhraseID}}_star5" name="Ratings[{{.PhraseID}}]" value="5"
+            {{if .IsFiveStar}}checked{{end}} />
+          <label for="{{.PhraseID}}_star5" title="text">5 stars</label>
+          <input type="radio" id="{{.PhraseID}}_star4" name="Ratings[{{.PhraseID}}]" value="4"
+            {{if .IsFourStar}}checked{{end}} />
+          <label for="{{.PhraseID}}_star4" title="text">4 stars</label>
+          <input type="radio" id="{{.PhraseID}}_star3" name="Ratings[{{.PhraseID}}]" value="3"
+            {{if .IsThreeStar}}checked{{end}} />
+          <label for="{{.PhraseID}}_star3" title="text">3 stars</label>
+          <input type="radio" id="{{.PhraseID}}_star2" name="Ratings[{{.PhraseID}}]" value="2"
+            {{if .IsTwoStar}}checked{{end}} />
+          <label for="{{.PhraseID}}_star2" title="text">2 stars</label>
+          <input type="radio" id="{{.PhraseID}}_star1" name="Ratings[{{.PhraseID}}]" value="1"
+            {{if .IsOneStar}}checked{{end}} />
+          <label for="{{.PhraseID}}_star1" title="text">1 star</label>
+        </div>
       </div>
       {{end}}
       {{else}}

@@ -3,6 +3,7 @@ package handlers
 import (
 	"html/template"
 	"net/http"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/alvarosness/punocracy/libhttp"
@@ -14,8 +15,22 @@ import (
 type historyPageData struct {
 	CurrentUser      *models.UserRow
 	IsCurator        bool
-	RatedPhrases     []string
+	RatedPhrases     []ratedPhraseDisplay
 	SubmittedPhrases []string
+}
+
+type submittedPhraseDisplay struct {
+}
+
+type ratedPhraseDisplay struct {
+	PhraseID            string
+	PhraseText          string
+	TimeSinceSubmission string
+	IsOneStar           bool
+	IsTwoStar           bool
+	IsThreeStar         bool
+	IsFourStar          bool
+	IsFiveStar          bool
 }
 
 // GetHistory generates a page showing the users' history of phrase ratings and phrase submissions
@@ -25,20 +40,34 @@ func GetHistory(w http.ResponseWriter, r *http.Request) {
 	sessionStore := r.Context().Value("sessionStore").(sessions.Store)
 
 	session, _ := sessionStore.Get(r, "punocracy-session")
-	currentUser, ok := session.Values["user"].(*models.UserRow)
 
-	var isCurator bool
-
-	if !ok {
-		currentUser = nil
-		isCurator = false
-	} else {
-		isCurator = currentUser.PermLevel <= models.Curator
-	}
+	currentUser, isCurator := getUser(session)
 
 	// Getting submitted phrases
 	mongdb := r.Context().Value("mongodb").(*mongo.Database)
 	phrasesCollection := models.NewPhraseConnection(mongdb)
+	ratingsCollection := models.NewUserRatingsConnection(mongdb)
+
+	ratings, _ := models.GetRatingsByUserID(*currentUser, ratingsCollection)
+
+	ratedPhrases := []ratedPhraseDisplay{}
+
+	for _, rating := range ratings {
+		now := time.Now()
+		timeSinceRating := now.Sub(rating.RateDate)
+		phrase, _ := models.GetPhraseByID(rating.PhraseID, phrasesCollection)
+
+		ratedPhrases = append(ratedPhrases, ratedPhraseDisplay{
+			PhraseID:            rating.PhraseID.Hex(),
+			PhraseText:          phrase.PhraseText,
+			TimeSinceSubmission: timeSinceRating.String(),
+			IsOneStar:           rating.RatingValue == 1,
+			IsTwoStar:           rating.RatingValue == 2,
+			IsThreeStar:         rating.RatingValue == 3,
+			IsFourStar:          rating.RatingValue == 4,
+			IsFiveStar:          rating.RatingValue == 5,
+		})
+	}
 
 	phrases, err := models.GetPhraseHistory(*currentUser, phrasesCollection)
 	if err != nil {
@@ -51,7 +80,7 @@ func GetHistory(w http.ResponseWriter, r *http.Request) {
 		submittedPhrases = append(submittedPhrases, phrase.PhraseText)
 	}
 
-	pageData := historyPageData{CurrentUser: currentUser, IsCurator: isCurator, RatedPhrases: nil, SubmittedPhrases: submittedPhrases}
+	pageData := historyPageData{CurrentUser: currentUser, IsCurator: isCurator, RatedPhrases: ratedPhrases, SubmittedPhrases: submittedPhrases}
 
 	tmpl, err := template.ParseFiles("templates/dashboard-nosearch.html.tmpl", "templates/history.html.tmpl")
 	if err != nil {
