@@ -63,6 +63,29 @@ func connectToMongo(urlString string) (*mongo.Database, error) {
 	return client.Database("punocracy"), nil
 }
 
+// Test GetTopPhrases
+func TestGetTopPhrases(t *testing.T) {
+	// Connect to MongoDB with default URL string
+	mongoDB, err := connectToMongo("mongodb://localhost:27017")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Get the phrases collection from the cool_songs database
+	phrases := newTestPhraseConnection(mongoDB)
+
+	// Execute the function
+	topPhrases, err := GetTopPhrases(5, phrases)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Log the phrases
+	for _, p := range topPhrases {
+		t.Log(p)
+	}
+}
+
 // Test DeleteByUserID
 
 // Test GetPhraseList
