@@ -529,3 +529,79 @@ func AverageRating(r Rating) float64 {
 	weightedRatings := 1*r.OneStar + 2*r.TwoStar + 3*r.ThreeStar + 4*r.FourStar + 5*r.FiveStar
 	return 5.0 * float64(weightedRatings) / float64(5*totalRatings)
 }
+
+// GetTopPhrases gets a sorted list of the top phrases, limited by a number
+func GetTopPhrases(limit int, phrases *mongo.Collection) ([]Phrase, error) {
+	// Aggregation pipeline
+	pipeline := bson.A{
+		// Only match accepted documents
+		bson.M{
+			"$match": bson.M{"displayValue": Accepted},
+		},
+		// Add numRatings field
+		bson.M{
+			"$addFields": bson.M{
+				"numRatings": bson.M{
+					"$sum": bson.A{
+						"$ratings.one",
+						"$ratings.two",
+						"$ratings.three",
+						"$ratings.four",
+						"$ratings.five",
+					},
+				},
+			},
+		},
+		// Compute avg. rating
+		bson.M{
+			"$addFields": bson.M{
+				"avgRating": bson.M{
+					"$cond": bson.M{
+						"if":   bson.M{"$eq": bson.A{"$numRatings", 0}},
+						"then": 0,
+						"else": bson.M{
+							"$divide": bson.A{
+								bson.M{
+									"$sum": bson.A{
+										"$ratings.one",
+										bson.M{"$multiply": bson.A{"$ratings.two", 2}},
+										bson.M{"$multiply": bson.A{"$ratings.three", 3}},
+										bson.M{"$multiply": bson.A{"$ratings.four", 4}},
+										bson.M{"$multiply": bson.A{"$ratings.five", 5}},
+									},
+								},
+								"$numRatings",
+							},
+						},
+					},
+				},
+			},
+		},
+		// Sort by avg. rating, then by numRatings
+		bson.M{
+			"$sort": bson.M{"avgRating": -1, "numRatings": -1},
+		},
+		// Limit output documents
+		bson.M{
+			"$limit": limit,
+		},
+	}
+
+	// Execute aggregation
+	cur, err := phrases.Aggregate(context.Background(), pipeline)
+	if err != nil {
+		return nil, err
+	}
+
+	// Decode results into list
+	var topPhrases []Phrase
+	for cur.Next(context.Background()) {
+		var thePhrase Phrase
+		err = cur.Decode(&thePhrase)
+		if err != nil {
+			return nil, err
+		}
+		topPhrases = append(topPhrases, thePhrase)
+	}
+	return topPhrases, nil
+}
