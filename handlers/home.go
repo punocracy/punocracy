@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"math"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -160,6 +161,18 @@ func PostHome(w http.ResponseWriter, r *http.Request) {
 		var ratings phraseRatings
 		decoder.Decode(&ratings, r.Form)
 		logrus.Infoln(ratings)
+
+		mongdb := r.Context().Value("mongodb").(*mongo.Database)
+		phrasesCollection := models.NewPhraseConnection(mongdb)
+		ratingsCollection := models.NewUserRatingsConnection(mongdb)
+
+		for k, v := range ratings.Ratings {
+			phrID, _ := primitive.ObjectIDFromHex(k)
+			rating, _ := strconv.Atoi(v)
+
+			phr, _ := models.GetPhraseByID(phrID, phrasesCollection)
+			models.AddOrChangeRating(*currentUser, rating, phr, phrasesCollection, ratingsCollection)
+		}
 
 		http.Redirect(w, r, "/now", 302)
 		return
