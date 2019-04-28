@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-playground/form"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/Sirupsen/logrus"
@@ -25,6 +27,7 @@ type homePageData struct {
 }
 
 type phraseDisplay struct {
+	PhraseID            string
 	PhraseText          string
 	Author              string
 	TimeSinceSubmission string
@@ -43,6 +46,10 @@ type resultPageData struct {
 	NoWords     bool
 	Puns        []string
 	Phrases     []phraseDisplay
+}
+
+type phraseRatings struct {
+	Ratings map[string]string
 }
 
 // HandleRoot redirects to now
@@ -84,16 +91,8 @@ func GetHome(w http.ResponseWriter, r *http.Request) {
 	sessionStore := r.Context().Value("sessionStore").(sessions.Store)
 
 	session, _ := sessionStore.Get(r, "punocracy-session")
-	currentUser, ok := session.Values["user"].(*models.UserRow)
 
-	var isCurator bool
-
-	if !ok {
-		currentUser = nil
-		isCurator = false
-	} else {
-		isCurator = currentUser.PermLevel <= models.Curator
-	}
+	currentUser, isCurator := getUser(session)
 
 	db := r.Context().Value("db").(*sqlx.DB)
 	wordTable := models.NewWord(db)
@@ -149,6 +148,82 @@ func PostHome(w http.ResponseWriter, r *http.Request) {
 	sessionStore := r.Context().Value("sessionStore").(sessions.Store)
 
 	session, _ := sessionStore.Get(r, "punocracy-session")
+
+	currentUser, isCurator := getUser(session)
+
+	r.ParseForm()
+
+	queryWord := r.FormValue("queryWord")
+
+	if queryWord == "" {
+		decoder := form.NewDecoder()
+		var ratings phraseRatings
+		decoder.Decode(&ratings, r.Form)
+		logrus.Infoln(ratings)
+
+		http.Redirect(w, r, "/now", 302)
+		return
+	} else {
+		db := r.Context().Value("db").(*sqlx.DB)
+		wordTable := models.NewWord(db)
+
+		var noPhrases bool
+		var noWords bool
+
+		words, wordErr := wordTable.QueryHlistString(nil, strings.ToLower(queryWord))
+
+		if wordErr != nil {
+			noWords = true
+		}
+
+		mongdb := r.Context().Value("mongodb").(*mongo.Database)
+		phrasesCollection := models.NewPhraseConnection(mongdb)
+		phrases, phraseErr := models.GetPhraseList(words, phrasesCollection)
+
+		if phraseErr != nil {
+			noPhrases = true
+		}
+
+		if len(phrases) == 0 {
+			noPhrases = true
+		}
+
+		userTable := models.NewUser(db)
+		puns := models.GeneratePuns(queryWord, words, phrases)
+		phraseList := []phraseDisplay{}
+
+		for _, phrase := range phrases {
+			submitter, _ := userTable.GetByID(nil, phrase.SubmitterUserID)
+			now := time.Now()
+			timeSinceSubmission := now.Sub(phrase.SubmissionDate)
+			avgRating := math.Round(models.AverageRating(phrase.PhraseRatings))
+
+			phraseList = append(phraseList, phraseDisplay{
+				PhraseID:            phrase.PhraseID.Hex(),
+				PhraseText:          phrase.PhraseText,
+				Author:              submitter.Username,
+				TimeSinceSubmission: timeSinceSubmission.String(),
+				IsOneStar:           avgRating == 1,
+				IsTwoStar:           avgRating == 2,
+				IsThreeStar:         avgRating == 3,
+				IsFourStar:          avgRating == 4,
+				IsFiveStar:          avgRating == 5,
+			})
+		}
+		pageData := resultPageData{CurrentUser: currentUser, QueryWord: queryWord, IsCurator: isCurator, NoPhrases: noPhrases, NoWords: noWords, Puns: puns, Phrases: phraseList}
+
+		tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/search.html.tmpl", "templates/query.html.tmpl")
+		if err != nil {
+			libhttp.HandleErrorJson(w, err)
+			return
+		}
+
+		tmpl.Execute(w, pageData)
+	}
+
+}
+
+func getUser(session *sessions.Session) (*models.UserRow, bool) {
 	currentUser, ok := session.Values["user"].(*models.UserRow)
 
 	var isCurator bool
@@ -160,74 +235,5 @@ func PostHome(w http.ResponseWriter, r *http.Request) {
 		isCurator = currentUser.PermLevel <= models.Curator
 	}
 
-	r.ParseForm()
-
-	logrus.Infoln(r.PostForm)
-	queryWord := r.FormValue("queryWord")
-
-	if queryWord == "" {
-		http.Redirect(w, r, "/now", 302)
-		return
-	}
-
-	db := r.Context().Value("db").(*sqlx.DB)
-	wordTable := models.NewWord(db)
-
-	var noPhrases bool
-	var noWords bool
-
-	words, wordErr := wordTable.QueryHlistString(nil, strings.ToLower(queryWord))
-
-	if wordErr != nil {
-		noWords = true
-	}
-
-	mongdb := r.Context().Value("mongodb").(*mongo.Database)
-	phrasesCollection := models.NewPhraseConnection(mongdb)
-	phrases, phraseErr := models.GetPhraseList(words, phrasesCollection)
-
-	if phraseErr != nil {
-		noPhrases = true
-	}
-
-	if len(phrases) == 0 {
-		noPhrases = true
-	}
-
-	userTable := models.NewUser(db)
-	puns := models.GeneratePuns(queryWord, words, phrases)
-	phraseList := []phraseDisplay{}
-
-	for _, phrase := range phrases {
-		submitter, _ := userTable.GetByID(nil, phrase.SubmitterUserID)
-		now := time.Now()
-		timeSinceSubmission := now.Sub(phrase.SubmissionDate)
-		avgRating := math.Round(models.AverageRating(phrase.PhraseRatings))
-
-		phraseList = append(phraseList, phraseDisplay{
-			PhraseText:          phrase.PhraseText,
-			Author:              submitter.Username,
-			TimeSinceSubmission: timeSinceSubmission.String(),
-			IsOneStar:           avgRating == 1,
-			IsTwoStar:           avgRating == 2,
-			IsThreeStar:         avgRating == 3,
-			IsFourStar:          avgRating == 4,
-			IsFiveStar:          avgRating == 5,
-		})
-	}
-	pageData := resultPageData{CurrentUser: currentUser, QueryWord: queryWord, IsCurator: isCurator, NoPhrases: noPhrases, NoWords: noWords, Puns: puns, Phrases: phraseList}
-
-	tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/search.html.tmpl", "templates/query.html.tmpl")
-	if err != nil {
-		libhttp.HandleErrorJson(w, err)
-		return
-	}
-
-	tmpl.Execute(w, pageData)
-}
-
-// PutHome handles whenever a user rates phrases
-func PutHome(w http.ResponseWriter, r *http.Request) {
-	logrus.Infoln(r.URL.Path)
-	logrus.Infoln("not implemented yet")
+	return currentUser, isCurator
 }
