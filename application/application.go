@@ -93,7 +93,6 @@ func (app *Application) mux() *gorilla_mux.Router {
 
 	router.Handle("/now", http.HandlerFunc(handlers.GetHome)).Methods("GET")
 	router.Handle("/now", http.HandlerFunc(handlers.PostHome)).Methods("POST")
-	router.Handle("/now", http.HandlerFunc(handlers.PutHome)).Methods("PUT")
 
 	router.HandleFunc("/", handlers.HandleRoot).Methods("GET", "POST", "PUT", "DELETE")
 

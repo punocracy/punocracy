@@ -42,7 +42,7 @@ type resultPageData struct {
 	NoPhrases   bool
 	NoWords     bool
 	Puns        []string
-	Phrases     []models.Phrase
+	Phrases     []phraseDisplay
 }
 
 // HandleRoot redirects to now
@@ -145,7 +145,6 @@ func GetHome(w http.ResponseWriter, r *http.Request) {
 // PostHome posts home
 func PostHome(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	logrus.Infoln(r.URL.Path)
 
 	sessionStore := r.Context().Value("sessionStore").(sessions.Store)
 
@@ -161,7 +160,15 @@ func PostHome(w http.ResponseWriter, r *http.Request) {
 		isCurator = currentUser.PermLevel <= models.Curator
 	}
 
+	r.ParseForm()
+
+	logrus.Infoln(r.PostForm)
 	queryWord := r.FormValue("queryWord")
+
+	if queryWord == "" {
+		http.Redirect(w, r, "/now", 302)
+		return
+	}
 
 	db := r.Context().Value("db").(*sqlx.DB)
 	wordTable := models.NewWord(db)
@@ -187,8 +194,28 @@ func PostHome(w http.ResponseWriter, r *http.Request) {
 		noPhrases = true
 	}
 
+	userTable := models.NewUser(db)
 	puns := models.GeneratePuns(queryWord, words, phrases)
-	pageData := resultPageData{CurrentUser: currentUser, QueryWord: queryWord, IsCurator: isCurator, NoPhrases: noPhrases, NoWords: noWords, Puns: puns, Phrases: phrases}
+	phraseList := []phraseDisplay{}
+
+	for _, phrase := range phrases {
+		submitter, _ := userTable.GetByID(nil, phrase.SubmitterUserID)
+		now := time.Now()
+		timeSinceSubmission := now.Sub(phrase.SubmissionDate)
+		avgRating := math.Round(models.AverageRating(phrase.PhraseRatings))
+
+		phraseList = append(phraseList, phraseDisplay{
+			PhraseText:          phrase.PhraseText,
+			Author:              submitter.Username,
+			TimeSinceSubmission: timeSinceSubmission.String(),
+			IsOneStar:           avgRating == 1,
+			IsTwoStar:           avgRating == 2,
+			IsThreeStar:         avgRating == 3,
+			IsFourStar:          avgRating == 4,
+			IsFiveStar:          avgRating == 5,
+		})
+	}
+	pageData := resultPageData{CurrentUser: currentUser, QueryWord: queryWord, IsCurator: isCurator, NoPhrases: noPhrases, NoWords: noWords, Puns: puns, Phrases: phraseList}
 
 	tmpl, err := template.ParseFiles("templates/dashboard.html.tmpl", "templates/search.html.tmpl", "templates/query.html.tmpl")
 	if err != nil {
@@ -201,5 +228,6 @@ func PostHome(w http.ResponseWriter, r *http.Request) {
 
 // PutHome handles whenever a user rates phrases
 func PutHome(w http.ResponseWriter, r *http.Request) {
+	logrus.Infoln(r.URL.Path)
 	logrus.Infoln("not implemented yet")
 }
