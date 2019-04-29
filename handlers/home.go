@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"math"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -118,7 +119,6 @@ func GetHome(w http.ResponseWriter, r *http.Request) {
 	avgRating := math.Round(models.AverageRating(samplephrase.PhraseRatings))
 	phraseList := []phraseDisplay{}
 
-	logrus.Infoln(avgRating)
 	phraseList = append(phraseList, phraseDisplay{
 		PhraseText:          samplephrase.PhraseText,
 		Author:              sampleUser.Username,
@@ -161,8 +161,19 @@ func PostHome(w http.ResponseWriter, r *http.Request) {
 		decoder.Decode(&ratings, r.Form)
 		logrus.Infoln(ratings)
 
+		mongdb := r.Context().Value("mongodb").(*mongo.Database)
+		phrasesCollection := models.NewPhraseConnection(mongdb)
+		ratingsCollection := models.NewUserRatingsConnection(mongdb)
+
+		for k, v := range ratings.Ratings {
+			phrID, _ := primitive.ObjectIDFromHex(k)
+			rating, _ := strconv.Atoi(v)
+
+			phr, _ := models.GetPhraseByID(phrID, phrasesCollection)
+			models.AddOrChangeRating(*currentUser, rating, phr, phrasesCollection, ratingsCollection)
+		}
+
 		http.Redirect(w, r, "/now", 302)
-		return
 	} else {
 		db := r.Context().Value("db").(*sqlx.DB)
 		wordTable := models.NewWord(db)

@@ -6,11 +6,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
 )
 
 var ErrPhraseNotFound = errors.New("models: no phrases with that PhraseID found in phrases collection")
@@ -189,7 +190,7 @@ func ratingToRatingString(r int) string {
 }
 
 // Get a phrase by ID
-func getPhraseByID(phraseID primitive.ObjectID, phrasesCollection *mongo.Collection) (Phrase, error) {
+func GetPhraseByID(phraseID primitive.ObjectID, phrasesCollection *mongo.Collection) (Phrase, error) {
 	var returnPhrase Phrase
 	err := phrasesCollection.FindOne(context.Background(), bson.M{"_id": phraseID}).Decode(&returnPhrase)
 	return returnPhrase, err
@@ -198,7 +199,7 @@ func getPhraseByID(phraseID primitive.ObjectID, phrasesCollection *mongo.Collect
 // Check if a phrase exists in the phrases collection
 func checkIfPhraseExists(p Phrase, phrasesCollection *mongo.Collection) (bool, error) {
 	// Check if the phrase exists in the phrases collection
-	_, err := getPhraseByID(p.PhraseID, phrasesCollection)
+	_, err := GetPhraseByID(p.PhraseID, phrasesCollection)
 	if err == mongo.ErrNoDocuments {
 		return false, nil
 	} else if err != nil {

@@ -248,7 +248,7 @@ func TestAddRemoveRatingToPhrase(t *testing.T) {
 	}
 
 	// Check the phrase
-	testPhrase, err = getPhraseByID(testPhrase.PhraseID, phrasesCollection)
+	testPhrase, err = GetPhraseByID(testPhrase.PhraseID, phrasesCollection)
 	if err != nil {
 		t.Fatal(err)
 	}
