@@ -1,3 +1,3 @@
 # Punocracy
 
-Welcome I suppose.
+This is currently work in progress
