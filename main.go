@@ -10,8 +10,8 @@ import (
 	"github.com/spf13/viper"
 	"github.com/tylerb/graceful"
 
-	"github.com/alvarosness/punocracy/application"
-	"github.com/alvarosness/punocracy/models"
+	"github.com/punocracy/punocracy/application"
+	"github.com/punocracy/punocracy/models"
 )
 
 func init() {

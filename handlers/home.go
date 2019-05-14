@@ -13,8 +13,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/alvarosness/punocracy/libhttp"
-	"github.com/alvarosness/punocracy/models"
+	"github.com/punocracy/punocracy/libhttp"
+	"github.com/punocracy/punocracy/models"
 	"github.com/gorilla/sessions"
 	"github.com/jmoiron/sqlx"
 	"go.mongodb.org/mongo-driver/mongo"

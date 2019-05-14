@@ -15,8 +15,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/spf13/viper"
 
-	"github.com/alvarosness/punocracy/handlers"
-	"github.com/alvarosness/punocracy/middlewares"
+	"github.com/punocracy/punocracy/handlers"
+	"github.com/punocracy/punocracy/middlewares"
 )
 
 // New is the constructor for Application struct.

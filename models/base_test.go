@@ -2,7 +2,7 @@ package models
 
 import (
 	"fmt"
-	"github.com/alvarosness/punocracy/libstring"
+	"github.com/punocracy/punocracy/libstring"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"strings"

@@ -4,8 +4,8 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/alvarosness/punocracy/libhttp"
-	"github.com/alvarosness/punocracy/models"
+	"github.com/punocracy/punocracy/libhttp"
+	"github.com/punocracy/punocracy/models"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 	"github.com/jmoiron/sqlx"

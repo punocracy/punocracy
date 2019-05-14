@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/alvarosness/punocracy/libhttp"
-	"github.com/alvarosness/punocracy/models"
+	"github.com/punocracy/punocracy/libhttp"
+	"github.com/punocracy/punocracy/models"
 	"github.com/go-playground/form"
 	"github.com/gorilla/sessions"
 	"go.mongodb.org/mongo-driver/mongo"
