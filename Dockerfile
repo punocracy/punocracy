@@ -1,7 +1,7 @@
 FROM golang
 
 # Fetch dependencies
-RUN go get github.com/tools/godep
+RUN go get -u github.com/golang/dep/cmd/dep
 
 # Add project directory to Docker image.
 ADD . /go/src/github.com/punocracy/punocracy
@@ -16,7 +16,11 @@ ENV DSN $GO_BOOTSTRAP_MYSQL_DSN
 
 WORKDIR /go/src/github.com/punocracy/punocracy
 
-RUN godep go build
+RUN dep init
+RUN dep ensure
+
+RUN go build
 
 EXPOSE 8888
+
 CMD ./punocracy

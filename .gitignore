@@ -15,3 +15,9 @@
 
 # DEV IDE configs
 .vscode/
+
+vendor/
+
+Gopkg.lock
+Gopkg.toml
+punocracy
