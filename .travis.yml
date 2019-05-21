@@ -4,10 +4,16 @@ dist: xenial
 
 language: go
 
+before_install:
+  go get -u github.com/golang/dep/cmd/dep
+
+before_script:
+  dep init
+  dep ensure
+
+script:
+  go test
+
 git:
   depth: 3
   quiet: true
-
-branches:
-  only:
-    - master
